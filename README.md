@@ -1,6 +1,6 @@
 # From a Monolith to Microservices
 
-For a previous example, we created a web service as a monolithic application in JavaScript with an SQL Database.
+In a previous exercise, we created a web service as a monolithic application in JavaScript with a database backend.
 The goal for this project is to split it up into multiple microservices which contain at least (but are not limited to):
  - Users Service
  - XXX Service
