@@ -25,7 +25,7 @@ The goal for this project is to split it up into multiple microservices which co
 The services will run on docker containers, which will be deployed using Kubernetes.
 Additionally, a CI pipeline using GitHub actions will be built and tested.
 
-Another goal of this project is to experiment with monitoring for microservices using the OpenTelemitry framework and visualize the resulting monitoring output using Jaeger.
+Another goal of this project is to experiment with monitoring for microservices using the OpenTelemitry framework and visualize the resulting monitoring data using Jaeger.
 
 ## Milestones
 
@@ -34,6 +34,7 @@ Another goal of this project is to experiment with monitoring for microservices 
   - Create docker containers with microservices
   - Connect microservices
   - Deploy containers using Kubernetes
+  - Build and Test a CI pipeline with GitHub Actions
   - Add monitoring to microservices
   - Test microservices and monitoring
   - Documentation
@@ -44,14 +45,17 @@ Another goal of this project is to experiment with monitoring for microservices 
       - Split up monolithic service
       - Create docker containers for microservices
       - Connect microservices
+      - Build and Test a CI pipeline with GitHub Actions
       - Test microservices
       - Documentation
   - Dimitry Maklakov
       - Improve frontend design
       - Deploy containers using Kubernetes
+      - Build and Test a CI pipeline with GitHub Actions
       - Documentation
   - Dominik Mascherbauer
-      - Deploy containers using Kuberenetes
+      - Deploy containers using Kubernetes
+      - Build and Test a CI pipeline with GitHub Actions
       - Add monitoring to microservices
       - Test microservices and monitoring
       - Documentation
