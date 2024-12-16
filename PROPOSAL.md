@@ -29,7 +29,7 @@ Another goal of this project is to experiment with monitoring for microservices 
 
 ## Milestones
 
-  - Improve frontend design
+  - Improvement of frontend application with respect to design and accessibility
   - Split up monolithic service
   - Create docker containers with microservices
   - Connect microservices
@@ -49,7 +49,7 @@ Another goal of this project is to experiment with monitoring for microservices 
       - Test microservices
       - Documentation
   - Dimitry Maklakov
-      - Improve frontend design
+      - Improvement of frontend application with respect to design and accessibility
       - Deploy containers using Kubernetes
       - Build and Test a CI pipeline with GitHub Actions
       - Documentation
