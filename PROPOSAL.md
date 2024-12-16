@@ -24,3 +24,34 @@ The goal for this project is to split it up into multiple microservices which co
 
 The services will run on docker containers, which will be deployed using Kubernetes.
 Additionally, a CI pipeline using GitHub actions will be built and tested.
+
+Another goal of this project is to experiment with monitoring for microservices using the OpenTelemitry framework and visualize the resulting monitoring output using Jaeger.
+
+## Milestones
+
+  - Improve frontend design
+  - Split up monolithic service
+  - Create docker containers with microservices
+  - Connect microservices
+  - Deploy containers using Kubernetes
+  - Add monitoring to microservices
+  - Test microservices and monitoring
+  - Documentation
+
+## Responsibilties
+
+  - Michael Haas
+      - Split up monolithic service
+      - Create docker containers for microservices
+      - Connect microservices
+      - Test microservices
+      - Documentation
+  - Dimitry Maklakov
+      - Improve frontend design
+      - Deploy containers using Kubernetes
+      - Documentation
+  - Dominik Mascherbauer
+      - Deploy containers using Kuberenetes
+      - Add monitoring to microservices
+      - Test microservices and monitoring
+      - Documentation
