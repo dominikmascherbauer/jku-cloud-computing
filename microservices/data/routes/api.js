@@ -7,6 +7,8 @@ const axios = require('axios');
 const websocketPort = process.env.WEBSOCKET_PORT || '3006'
 const databasePort = process.env.DABABASE_PORT || '3002'
 const databaseUrl = `http://localhost:${databasePort}/api`
+const userPort = process.env.USER_PORT || '3003'
+const userUrl = `http://localhost:${userPort}/api`
 
 const wss = new WebSocket.Server({ port: websocketPort });
 
@@ -25,37 +27,19 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-// Middleware to check if user is logged in
-function isLoggedIn(req, res, next) {
-  if (!req.jwtProvided) {
-    console.log("Denied: Authentication required");
-    return res.status(401).send('Authentication required');
-  } else if (req.jwtVerifyError || req.jwtExpired) {
-    console.log("Denied: Invalid authentication token");
-    return res.status(401).send('Invalid authentication token');
+
+async function isLoggedIn(req, res, next) {
+  try {
+
+    const response = await axios.get(userUrl+"/user/loggedIn", {headers: {'Authorization': req.headers['authorization']}})
+    req.jwtPayload = response.data.jwtPayload
+  } catch (error) {
+    console.error(error)
+    return res.status(error.response.status).json(error.response.data);
   }
   next();
 }
 
-function isAdmin(req, res, next) {
-  if (req.jwtPayload && req.jwtPayload.userIsAdmin) {
-    next();
-  } else {
-    console.log("Denied: Admin privileges required");
-    res.status(403).send('Admin privileges required');
-  }
-}
-
-// Get logged in user information
-router.get('/user/information', async (req, res) => {
-  try {
-    if(!req.jwtProvided ||req.jwtVerifyError || req.jwtExpired) res.send()
-    else res.send({name: req.jwtPayload.name, isAdmin: req.jwtPayload.userIsAdmin})
-  } catch (error) {
-    res.status(500).send('Error fetching users information');
-    console.error(error)
-  }
-});
 
 
 // Get all articles to read
@@ -137,8 +121,8 @@ router.get('/court/reservation/:date', isLoggedIn,  async (req, res) => {
 router.post('/court/reservation/add', isLoggedIn,  async (req, res) => {
   try {
     req.body.userId = req.jwtPayload.id;
+    console.log("id"+req.jwtPayload.id)
     // await db.court.addReservation(req.body)
-    console.log(req.body)
     const ack = (await axios.post(databaseUrl+req.path, req.body)).data
     broadcast({entity: 'reservation', op: 'add', data: {courtId: req.body.courtId, startHour: req.body.startHour}})
     res.send()
@@ -153,6 +137,7 @@ router.delete('/court/reservation/delete/:reservationId', isLoggedIn, async (req
   try {
     //const reservation = await db.court.deleteReservation(req.params.reservationId)
     const reservation = (await axios.delete(databaseUrl+req.path)).data
+    console.log(reservation)
     broadcast({entity: 'reservation', op: 'delete', data: {courtId: reservation.courtId, startHour: reservation.startHour}})
     res.send()
   } catch (error) {

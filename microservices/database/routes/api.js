@@ -128,7 +128,6 @@ router.get('/court/reservation/:date/:id',  async (req, res) => {
 // Add a reservation on a court
 router.post('/court/reservation/add',  async (req, res) => {
   try {
-    console.log(req.body)
     //req.body.userId = req.params.id;
     const ack = await db.court.addReservation(req.body)
     res.send()
@@ -142,7 +141,7 @@ router.post('/court/reservation/add',  async (req, res) => {
 router.delete('/court/reservation/delete/:reservationId', async (req, res) => {
   try {
     const reservation = await db.court.deleteReservation(req.params.reservationId)
-    res.send()
+    res.send(reservation)
   } catch (error) {
     res.status(500).send('Error deleting a reservation')
     console.error(error)

@@ -19,41 +19,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 
-function verifyToken(req, res, next) {
-    let token = req.headers['authorization'];
-    req.jwtProvided = false;
-    req.jwtVerifyError = false;
-    req.jwtExpired = false;
-    req.jwtPayload = null;
-
-    if (token) {
-        token = token.replace("Bearer ", "")
-        req.jwtProvided = true;
-        jwt.verify(token, jwtSecret, (err, decoded) => {
-            if (err) {
-                req.jwtVerifyError = true;
-                // Check if the error is because the JWT has expired
-                if (err.name === 'TokenExpiredError') {
-                    req.jwtExpired = true; // You can add this line to indicate specifically that the JWT expired
-                }
-            } else {
-                // console.log("JWT: ", decoded)
-                req.jwtPayload = decoded;
-            }
-            next();
-        });
-    } else {
-        next();
-    }
-}
-
-// Apply the verifyToken middleware to all routes
-// The order of our middlewares matters: If we put this before
-// setting up our express.static middleware, JWT would even be checked
-// for every static resource, which would introduce unncessary overhead.
-app.use(verifyToken);
-
-
 app.use('/api', apiRouter)
 
 module.exports = app;

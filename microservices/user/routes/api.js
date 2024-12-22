@@ -45,6 +45,16 @@ function isAdmin(req, res, next) {
   }
 }
 
+// Verifies if a user is logged in
+router.get('/user/loggedIn', isLoggedIn, async (req, res) => {
+  try {
+    res.send({jwtPayload: req.jwtPayload})
+  } catch (error) {
+    console.error(error)
+    return res.status(error.response.status).json(error.response.data);
+  }
+});
+
 // Get logged in user information
 router.get('/user/information', async (req, res) => {
   try {
@@ -57,7 +67,7 @@ router.get('/user/information', async (req, res) => {
 });
 
 // Get all users endpoint
-router.get('/user/all', /*isLoggedIn, isAdmin,*/ async (req, res) => {
+router.get('/user/all', isLoggedIn, isAdmin, async (req, res) => {
   try {
     //const users = await db.user.findAllUsers()
 
@@ -70,7 +80,7 @@ router.get('/user/all', /*isLoggedIn, isAdmin,*/ async (req, res) => {
 });
 
 // Delete a user
-router.delete('/user/delete/:mail',  /*isLoggedIn, isAdmin,*/ async (req, res) => {
+router.delete('/user/delete/:mail',  isLoggedIn, isAdmin, async (req, res) => {
   try {
     //const ack = await db.user.deleteUserByMail(req.params.mail)
     const ack = await axios.delete(databaseUrl+req.path);
@@ -82,7 +92,7 @@ router.delete('/user/delete/:mail',  /*isLoggedIn, isAdmin,*/ async (req, res) =
 });
 
 // Update a users role
-router.post('/user/:mail/:newRole',  /*isLoggedIn, isAdmin,*/ async (req, res) => {
+router.post('/user/:mail/:newRole',  isLoggedIn, isAdmin, async (req, res) => {
   try {
     //const ack = await db.user.updateUserRoleByMail(req.params.mail, req.params.newRole)
     const ack = await axios.post(databaseUrl+req.path)
