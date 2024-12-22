@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const WebSocket = require('ws');
 const axios = require('axios');
+var config = require('../../config');
 
-const websocketPort = process.env.WEBSOCKET_PORT || '3004'
-const databasePort = process.env.DABABASE_PORT || '3002'
-const databaseUrl = `http://localhost:${databasePort}/api`
+const websocketPort = config.port.user.websocket;
+const databaseUrl = config.url.database + "api";
 
 const wss = new WebSocket.Server({ port: websocketPort });
 

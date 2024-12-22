@@ -2,11 +2,11 @@ var express = require('express');
 var bcrypt = require('bcrypt');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
-//var db = require('../database');
 const axios = require('axios');
+var config = require('../../config');
 
-const databasePort = process.env.DABABASE_PORT || '3002'
-const databaseUrl = `http://localhost:${databasePort}/api`
+
+const databaseUrl = config.url.database+"api";
 
 const saltRounds = 10;
 const jwtSecret = process.env.JWT_SECRET;

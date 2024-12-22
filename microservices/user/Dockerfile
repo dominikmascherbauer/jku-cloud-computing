@@ -14,4 +14,4 @@ COPY . .
 EXPOSE 3003
 EXPOSE 3004
 # Run the app with npm start
-CMD ["npm", "start"]
+CMD JWT_SECRET=test npm start
