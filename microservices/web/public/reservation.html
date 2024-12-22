@@ -92,7 +92,7 @@
                     token: localStorage.getItem("jwt"),
                     expiresAt: localStorage.getItem("expiresAt") ? new Date(+localStorage.getItem("expiresAt")) : null
                 },
-                apiUrl:`http://localhost:3000/api/`,
+                apiUrl:`http://localhost:3005/api/`,
                 ws: null
             }
           },
@@ -139,7 +139,7 @@
             },
             setupWebsocketClient() {
                 try {
-                    const websocket = new WebSocket('ws://localhost:3001')
+                    const websocket = new WebSocket('ws://localhost:3006')
                     this.ws = websocket
                     vue = this
 

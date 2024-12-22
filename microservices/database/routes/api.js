@@ -96,7 +96,6 @@ router.get('/court/all',  async (req, res) => {
 router.post('/court/startWatering/:courtId',  async (req, res) => {
   try {
     const ack = await db.court.startWatering(req.params.courtId)
-    broadcast({entity: 'watering', op: 'start', data: {courtId: req.params.courtId, lastWatering: ack}})
     res.json(ack)
   } catch (error) {
     res.status(500).send('Error starting watering')
@@ -108,7 +107,6 @@ router.post('/court/startWatering/:courtId',  async (req, res) => {
 router.post('/court/stopWatering/:courtId',  async (req, res) => {
   try {
     const ack = await db.court.stopWatering(req.params.courtId)
-    broadcast({entity: 'watering', op: 'stop', data: {courtId: req.params.courtId}})
     res.json(ack)
   } catch (error) {
     res.status(500).send('Error starting watering')
@@ -117,9 +115,9 @@ router.post('/court/stopWatering/:courtId',  async (req, res) => {
 });
 
 // Get personal reservations on a court on a date
-router.get('/court/reservation/:date',  async (req, res) => {
+router.get('/court/reservation/:date/:id',  async (req, res) => {
   try {
-    const reservations = await db.court.findPersonalReservations(req.jwtPayload.id, req.params.date)
+    const reservations = await db.court.findPersonalReservations(req.params.id, req.params.date)
     res.json(reservations)
   } catch (error) {
     res.status(500).send('Error fetching all personal reservations')
@@ -130,9 +128,9 @@ router.get('/court/reservation/:date',  async (req, res) => {
 // Add a reservation on a court
 router.post('/court/reservation/add',  async (req, res) => {
   try {
-    req.body.userId = req.jwtPayload.id;
+    console.log(req.body)
+    //req.body.userId = req.params.id;
     const ack = await db.court.addReservation(req.body)
-    broadcast({entity: 'reservation', op: 'add', data: {courtId: req.body.courtId, startHour: req.body.startHour}})
     res.send()
   } catch (error) {
     res.status(500).send('Error adding a reservation')
@@ -144,7 +142,6 @@ router.post('/court/reservation/add',  async (req, res) => {
 router.delete('/court/reservation/delete/:reservationId', async (req, res) => {
   try {
     const reservation = await db.court.deleteReservation(req.params.reservationId)
-    broadcast({entity: 'reservation', op: 'delete', data: {courtId: reservation.courtId, startHour: reservation.startHour}})
     res.send()
   } catch (error) {
     res.status(500).send('Error deleting a reservation')
