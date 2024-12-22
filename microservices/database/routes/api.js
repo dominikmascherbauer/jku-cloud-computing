@@ -14,6 +14,28 @@ router.get('/user/all',  async (req, res) => {
   }
 });
 
+// Get a user by mail endpoint
+router.get('/user/:mail',  async (req, res) => {
+  try {
+    const user = await db.user.findUserByMail(req.params.mail);
+    res.json(user);
+  } catch (error) {
+    res.status(500).send('Error fetching user')
+    console.error(error)
+  }
+});
+
+// Add a user
+router.post('/user/add',  async (req, res) => {
+  try {
+    const ack = await db.user.addUser(req.body);
+    res.send()
+  } catch (error) {
+    res.status(500).send('Error adding a user')
+    console.error(error)
+  }
+});
+
 // Delete a user
 router.delete('/user/delete/:mail',  async (req, res) => {
   try {
