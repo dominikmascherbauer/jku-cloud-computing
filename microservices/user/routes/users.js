@@ -20,7 +20,8 @@ router.post('/login', async function(req, res) {
 
     try {
         //const user = await db.user.findUserByMail(mail);
-        const user = (await axios.get(databaseUrl+`/${req.params.mail}`)).data;
+        console.log(databaseUrl+`/${mail}`)
+        const user = (await axios.get(databaseUrl+`/user/${mail}`)).data;
         if (user && await bcrypt.compare(pw, user.password)) {
             const token = jwt.sign({ id: user.id, userMail: user.mail, name: `${user.firstname} ${user.lastname}`, userIsAdmin: user.role.startsWith('admin') }, jwtSecret, { expiresIn: '1h' });
             res.send({ status: 'success', message: 'Login successful', token: token, expiresAt: Date.now() + 3600000, name: `${user.firstname} ${user.lastname}`, isAdmin: user.role.startsWith('admin')});
@@ -41,14 +42,14 @@ router.post('/register', async function(req, res) {
 
     try {
         //const userExists = await db.user.findUserByMail(mail);
-        const userExists = (await axios.get(databaseUrl+`/user/${req.params.mail}`)).data;
+        const userExists = (await axios.get(databaseUrl+`/user/${mail}`)).data;
         if (userExists) {
             console.log("addUser")
             res.status(409).send({ status: 'fail', message: 'User already exists' });
         } else {
             const hashedPw = await bcrypt.hash(pw, saltRounds);
             console.log("addUser")
-            const ack =  axios.post(databaseUrl+req.path, {firstname, lastname,  mail, password: hashedPw, role });
+            const ack =  await axios.post(databaseUrl+`/user/add`, {firstname, lastname,  mail, password: hashedPw, role });
             //await db.user.addUser({firstname, lastname,  mail, password: hashedPw, role });
             console.log("addUser")
             res.send({ status: 'success', message: 'Registration successful' });

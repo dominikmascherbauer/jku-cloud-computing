@@ -91,7 +91,7 @@
                     token: localStorage.getItem("jwt"),
                     expiresAt: localStorage.getItem("expiresAt") ? new Date(+localStorage.getItem("expiresAt")) : null
                 },
-                apiUrl:`http://localhost:3000/api/`
+                apiUrl:`http://localhost:3003/api/`
             }
           },
           methods: {
@@ -104,7 +104,7 @@
                     .catch(error => alert(`Failed to change user role\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`))
             },
             registerAxios() {
-                const url = 'http://localhost:3000/user_handling/register'
+                const url = 'http://localhost:3003/user_handling/register'
                 axios.post(url, { firstname: this.registerFirstname, lastname: this.registerLastname, mail: this.registerEmail, pw: this.registerPassword, role: this.registerRole})
                     .then(response => {
                         this.users.push({ firstname: this.registerFirstname, lastname: this.registerLastname, mail: this.registerEmail, role: this.registerRole})
