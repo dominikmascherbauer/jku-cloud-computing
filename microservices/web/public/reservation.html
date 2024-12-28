@@ -18,7 +18,7 @@
                 </ul>
             </nav>
         </header>
-        
+
         <main>
             <div>
                 <div class="court" v-for="court in courts">
@@ -59,7 +59,7 @@
 
 
         const { createApp } = Vue
-        
+
         createApp({
           data: function() {
             return {
@@ -69,7 +69,7 @@
                 courts: [
                     {
                         id: 1,
-                        description: "Platz 1", 
+                        description: "Platz 1",
                         availabilityStartHour: 10,
                         availabilityEndHour: 20,
                         reservations:[
@@ -104,7 +104,7 @@
                 return newDate
             },
             dateToString: function (date){
-                return date.getDate().toString().padStart(2, '0')+"."+date.getMonth().toString().padStart(2, '0')+"."+date.getFullYear()
+                return date.getDate().toString().padStart(2, '0')+"."+(date.getMonth()+1).toString().padStart(2, '0')+"."+date.getFullYear()
             },
             addReservation: function(court, hour){
                 axios.post(`${this.apiUrl}court/reservation/add`, {courtId:court.id, date: this.selectedDate.getTime(), startHour:hour}, { headers: this.authorizationHeader() })
@@ -144,7 +144,7 @@
                     vue = this
 
                     websocket.onmessage = function(event) {
-                        const message = JSON.parse(event.data)                        
+                        const message = JSON.parse(event.data)
                          if(message.entity === 'reservation'){
                             switch(message.op){
                                 case 'add':
@@ -160,7 +160,7 @@
                                     }
                                     break
                             }
-                        } 
+                        }
                     };
 
                     websocket.onerror = function(event) {

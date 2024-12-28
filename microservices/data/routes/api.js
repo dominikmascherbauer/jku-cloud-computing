@@ -4,6 +4,10 @@ const router = express.Router();
 const WebSocket = require('ws');
 const axios = require('axios');
 const config = require('../../config');
+var tracer = require('../tracer')('data-service')
+
+var api = require('@opentelemetry/api');
+
 
 const websocketPort = config.port.data.websocket;
 const databaseUrl = config.url.database+"api";
@@ -27,13 +31,37 @@ wss.on('connection', (ws, req) => {
 });
 
 
-async function isLoggedIn(req, res, next) {
-  try {
+async function traceUserServiceRequest(req, res, next) {
 
-    const response = await axios.get(userUrl+"/user/loggedIn", {headers: {'Authorization': req.headers['authorization']}})
+}
+
+async function traceDataBaseServiceRequest(req, res, next) {
+
+}
+
+async function isLoggedIn(req, res, next) {
+  const reqHeaders = { headers: {'Authorization': req.headers['authorization']} }
+
+  const currentSpan = api.trace.getActiveSpan();
+  // display traceid in the terminal
+  const traceId = currentSpan.spanContext().traceId;
+  console.log(`traceId: ${traceId}`);
+  const span = tracer.startSpan('check-is-logged-in-with-user-service', {
+    attributes: reqHeaders.headers,
+  });
+  // Annotate our span to capture metadata about the operation
+  span.addEvent('Send user login check request to user service with authorization header');
+  try {
+    const response = await axios.get(userUrl+"/user/loggedIn", reqHeaders)
     req.jwtPayload = response.data.jwtPayload
+
+    span.setAttributes(response.data.jwtPayload)
+    span.addEvent('Got jwt payload as response from user service');
+    span.end();
   } catch (error) {
     console.error(error)
+    span.addEvent('Request failed: ' + error);
+    span.end();
     return res.status(error.response.status).json(error.response.data);
   }
   next();
@@ -43,14 +71,24 @@ async function isLoggedIn(req, res, next) {
 
 // Get all articles to read
 router.get('/article/all', async (req, res) => {
+  const currentSpan = api.trace.getActiveSpan();
+  // display traceid in the terminal
+  const traceId = currentSpan.spanContext().traceId;
+  console.log(`traceId: ${traceId}`);
+  const span = tracer.startSpan('get-all-users-with-database-service');
+  // Annotate our span to capture metadata about the operation
+  span.addEvent('Send get all users request to database service.');
   try {
     //const articles = await db.article.findAllArticles()
     const articles = await axios.get(databaseUrl+req.path)
     res.json(articles.data);
+    span.addEvent('Got user data: ' + articles.data);
   } catch (error) {
     res.status(500).send('Error fetching all articles')
     console.error(error)
+    span.addEvent('Request failed: ' + error);
   }
+  span.end();
 });
 
 // Get all courts including reservations and unavailabilites on a certain date
