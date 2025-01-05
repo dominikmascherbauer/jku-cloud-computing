@@ -4,12 +4,16 @@ FROM node:16-alpine
 LABEL author='michael.haas0612@gmail.com'
 # Set working directory: `/opt`
 WORKDIR /opt
-# Copy package files
-COPY package*.json ./
+# Copy all the source code into the container
+COPY ./data ./data
+# Set working directory: `/opt/data`
+WORKDIR /opt/data
+RUN ls -lsa
 # Install dependencies
 RUN npm install
-# Copy all the source code into the container
-COPY . .
+RUN ls -lsa
+# Copy config file
+COPY ./config.js ../config.js
 # Expose the app port
 EXPOSE 3005
 EXPOSE 3006
