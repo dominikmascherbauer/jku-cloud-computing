@@ -63,4 +63,4 @@ jobs:
           context: ./microservices
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service }}:${{ steps.vars.outputs.sha_short }}
-          file: ./microservices/${ {matrix.service }}/Dockerfile
+          file: ./microservices/${{ matrix.service }}/Dockerfile
