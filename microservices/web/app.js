@@ -17,16 +17,15 @@ function traceRequest(req, res, next) {
     const traceId = currentSpan.spanContext().traceId;
     console.log(`traceId: ${traceId}`);
     const span = tracer.startSpan('web-service-request', {
-        kind: 1, // server
+        kind: 1,
         attributes: { protocol: req.protocol, path: req.path },
     });
     // Annotate our span to capture metadata about the operation
-    span.addEvent('got request: ' + req);
-    console.log('request: ' + req.ip);
+    span.addEvent('Received request for ' + req.path);
 
     req.on('error', (err) => console.log(err));
     req.on('end', () => {
-        span.addEvent('finished request: ' + req)
+        span.addEvent('finished request')
         span.end()
     });
 

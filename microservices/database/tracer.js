@@ -9,14 +9,31 @@ const { JaegerExporter } = require('@opentelemetry/exporter-jaeger');
 const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin');
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http');
 
+
+// Custom Span Processor to filter out unwanted spans
+class CustomSpanProcessor extends SimpleSpanProcessor {
+    onEnd(span) {
+        // Filter out HTTP request spans
+        if (span.instrumentationLibrary.name === "tennis-website") {
+            super.onEnd(span);
+        }
+    }
+}
+
 module.exports = (serviceName) => {
     const provider = new NodeTracerProvider({
         resource: new Resource({
             [ATTR_SERVICE_NAME]: serviceName,
         }),
         spanProcessors: [
-            new SimpleSpanProcessor(new JaegerExporter()),
-            new SimpleSpanProcessor(new ZipkinExporter())
+            new SimpleSpanProcessor(new JaegerExporter({
+                serviceName,
+                endpoint: 'http://localhost:14268/api/traces'
+            })),
+            new SimpleSpanProcessor(new ZipkinExporter({
+                serviceName,
+                url: 'http://localhost:9412/api/v2/spans' // Updated to new port
+            }))
         ]
     });
 

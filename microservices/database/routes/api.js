@@ -43,8 +43,12 @@ router.get('/user/:mail',  async (req, res) => {
   try {
     const user = await db.user.findUserByMail(req.params.mail);
     res.json(user);
-    span.setAttributes(user)
-    span.addEvent('Found user.');
+    if (user) {
+      span.setAttributes(user)
+      span.addEvent('Found user.');
+    } else {
+      span.addEvent('Could not find user.');
+    }
   } catch (error) {
     res.status(500).send('Error fetching user')
     console.error(error)
