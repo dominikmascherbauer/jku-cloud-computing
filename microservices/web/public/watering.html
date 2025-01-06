@@ -116,12 +116,12 @@
             if (message.entity === 'watering') {
               switch (message.op) {
                 case 'start':
-                  court = vue.courts.find(court => message.data.courtId === court.id);
+                  court = vue.courts.find(court => message.data.courtId == court.id);
                   court.lastWatering = new Date(message.data.lastWatering);
                   court.running = true;
                   break;
                 case 'stop':
-                  court = vue.courts.find(court => message.data.courtId === court.id);
+                  court = vue.courts.find(court => message.data.courtId == court.id);
                   court.running = false;
                   break;
               }
