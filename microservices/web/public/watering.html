@@ -38,8 +38,6 @@
     </footer>
 </div>
 <script>
-
-
   const {createApp} = Vue;
 
   createApp({
@@ -59,7 +57,7 @@
           expiresAt: localStorage.getItem('expiresAt') ? new Date(+localStorage.getItem('expiresAt')) : null
         },
         wateringDuration: 2,
-        apiUrl: `http://localhost:3005/api/`,
+        apiUrl: '/data/api/',
         ws: null
       };
     },
@@ -93,7 +91,7 @@
         return this.jwt.token ? {'Authorization': `Bearer ${this.jwt.token}`} : {};
       },
       fetchCourts() {
-        axios.get(`${this.apiUrl}/court/all`, {headers: this.authorizationHeader()})
+        axios.get(`${this.apiUrl}court/all`, {headers: this.authorizationHeader()})
           .then(response => {
               response.data.forEach(court => {
                   this.intervalIds[court.id] = -1;
@@ -107,7 +105,7 @@
       },
       setupWebsocketClient() {
         try {
-          const websocket = new WebSocket('ws://localhost:3006');
+          const websocket = new WebSocket('/ws/');
           this.ws = websocket;
           vue = this;
 

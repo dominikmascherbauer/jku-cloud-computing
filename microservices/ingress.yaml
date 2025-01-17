@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-controller
+  annotations: 
+    # tells the ingress controller to rewrite paths
+    # we want to rewrite /user/api/user/... to just /api/user/.. and pass it on to the user service
+    # same for other routes 
+    # $1 takes the first match group from the regex
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+  labels:
+    name: ingress-controller
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: tennis.example
+    http:
+      paths:
+      - path: /user/(.*)  # captures everything after user
+        pathType:  ImplementationSpecific
+        backend:
+          service:
+            name: user-service
+            port: 
+              number: 3003
+      - path: /data/(.*)  # captures everything after data
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: data-service
+            port: 
+              number: 3005
+      - path: /ws/(.*)  # captures everything after ws
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: data-service
+            port: 
+              number: 3006
+      - path: /(.*)  # captures everything else
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: web-service
+            port:
+              number: 3000

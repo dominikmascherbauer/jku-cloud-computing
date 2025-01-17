@@ -42,7 +42,7 @@
           token: localStorage.getItem('jwt'),
           expiresAt: localStorage.getItem('expiresAt') ? new Date(+localStorage.getItem('expiresAt')) : null
         },
-        apiUrl: `http://localhost:3005/api/`
+        apiUrl: '/data/api/'
       };
     },
     mounted() {
@@ -53,7 +53,7 @@
         return this.jwt.token ? {'Authorization': `Bearer ${this.jwt.token}`} : {};
       },
       fetchArticles() {
-        axios.get(`${this.apiUrl}/article/all`, {headers: this.authorizationHeader()})
+        axios.get(`${this.apiUrl}article/all`, {headers: this.authorizationHeader()})
           .then(response => this.articles = response.data)
           .catch(error => alert(`Failed to fetch all articles \nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
       },

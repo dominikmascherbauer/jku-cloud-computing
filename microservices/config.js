@@ -15,10 +15,11 @@ module.exports = {
     // urls used by services to access api of other services
     // ATTENTION: ports in the html files need to be specified manually
     url: {
-        web: 'http://localhost:3000/',
-        database: 'http://localhost:3002/',
-        user: 'http://localhost:3003/',
-        data: 'http://localhost:3005/',
+        web: 'http://web-service:3000/',
+        database: 'http://database-service:3002/',
+        user: 'http://user-service:3003/',
+        data: 'http://data-service:3005/',
+        dataws: 'ws://data-service:3006/',
     }
     
   };

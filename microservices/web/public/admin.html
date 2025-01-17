@@ -93,7 +93,7 @@
               token: localStorage.getItem('jwt'),
               expiresAt: localStorage.getItem('expiresAt') ? new Date(+localStorage.getItem('expiresAt')) : null
             },
-            apiUrl: `http://localhost:3003/api/`
+            apiUrl: '/user/api/'
           };
         },
         methods: {
@@ -106,7 +106,7 @@
               .catch(error => alert(`Failed to change user role\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
           },
           registerAxios() {
-            const url = 'http://localhost:3003/user_handling/register';
+            const url = '/user/user_handling/register';
             axios.post(url, {
               firstname: this.registerFirstname,
               lastname: this.registerLastname,
@@ -133,7 +133,7 @@
               });
           },
           fetchUsers() {
-            axios.get(`${this.apiUrl}/user/all`, {headers: this.authorizationHeader()})
+            axios.get(`${this.apiUrl}user/all`, {headers: this.authorizationHeader()})
               .then(response => this.users = response.data)
               .catch(error => alert(`Failed to fetch all users \nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
           },

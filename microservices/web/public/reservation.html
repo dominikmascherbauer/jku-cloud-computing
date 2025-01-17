@@ -58,8 +58,6 @@
     </main>
 </div>
 <script>
-
-
   const {createApp} = Vue;
 
   createApp({
@@ -94,7 +92,7 @@
           token: localStorage.getItem('jwt'),
           expiresAt: localStorage.getItem('expiresAt') ? new Date(+localStorage.getItem('expiresAt')) : null
         },
-        apiUrl: `http://localhost:3005/api/`,
+        apiUrl: '/data/api/',
         ws: null
       };
     },
@@ -131,12 +129,12 @@
         return this.jwt.token ? {'Authorization': `Bearer ${this.jwt.token}`} : {};
       },
       fetchCourts() {
-        return axios.get(`${this.apiUrl}/court/all/${encodeURIComponent(this.selectedDate.getTime())}`, {headers: this.authorizationHeader()})
+        return axios.get(`${this.apiUrl}court/all/${encodeURIComponent(this.selectedDate.getTime())}`, {headers: this.authorizationHeader()})
           .then(response => this.courts = response.data)
           .catch(error => alert(`Failed to fetch all courts \nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
       },
       fetchPersonalReservations() {
-        return axios.get(`${this.apiUrl}/court/reservation/${encodeURIComponent(this.selectedDate.getTime())}`, {headers: this.authorizationHeader()})
+        return axios.get(`${this.apiUrl}court/reservation/${encodeURIComponent(this.selectedDate.getTime())}`, {headers: this.authorizationHeader()})
           .then(response => {
             response.data.forEach(reservation => reservation.date = new Date(reservation.date));
             this.personalReservations = response.data;
@@ -145,7 +143,7 @@
       },
       setupWebsocketClient() {
         try {
-          const websocket = new WebSocket('ws://localhost:3006');
+          const websocket = new WebSocket('/ws/');
           this.ws = websocket;
           vue = this;
 

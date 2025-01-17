@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+      - name: user
+        image: dominikmascherbauer/user:test
+        ports:
+        - containerPort: 3003
+        - containerPort: 3004
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  selector:
+    app: user
+  ports:
+  - name: api
+    port: 3003
+    protocol: TCP
+    targetPort: 3003
+  - name: ws
+    port: 3004
+    protocol: TCP
+    targetPort: 3004
