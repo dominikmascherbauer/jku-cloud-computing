@@ -28,7 +28,7 @@ module.exports = (serviceName) => {
     spanProcessors: [
       new SimpleSpanProcessor(new JaegerExporter({
         serviceName,
-        endpoint: `http://${config.jaegerService}:${config.jaegerService.port.collector}/api/traces`
+        endpoint: `http://${config.jaegerService.name}:${config.jaegerService.port.collector}/api/traces`
       })),
       new SimpleSpanProcessor(new ZipkinExporter({
         serviceName,

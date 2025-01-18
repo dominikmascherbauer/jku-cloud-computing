@@ -1,6 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  # requires port forwarding in minikube
+  # minikube kubectl -- port-forward --address 0.0.0.0 service/zipkin-service 9411:9411
   name: zipkin
 spec:
   replicas: 1
@@ -31,5 +33,5 @@ spec:
   - name: collector
     port: 9411
     protocol: TCP
-    targetPort: 9412
+    targetPort: 9411
   

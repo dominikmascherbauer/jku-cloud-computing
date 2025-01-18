@@ -35,7 +35,7 @@ module.exports = {
     zipkinService: {
         name: 'zipkin-service',
         port: {
-            collector: 9412  // same for ui
+            collector: 9411  // same for ui
         }
     }
   };

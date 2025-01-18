@@ -1,6 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  # requires port forwarding in minikube
+  # minikube kubectl -- port-forward --address 0.0.0.0 service/jaeger-service 16686:16686
   name: jaeger
 spec:
   replicas: 1
@@ -17,6 +19,9 @@ spec:
       - name: jaeger
         image: jaegertracing/all-in-one:latest
         imagePullPolicy: "Always"
+        env:
+          - name: COLLECTOR_ZIPKIN_HTTP_PORT
+            value: "9411"
         ports:
         - containerPort: 5775
         - containerPort: 6831
