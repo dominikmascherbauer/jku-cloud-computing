@@ -1,6 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  # requires port forwarding in minikube
+  # minikube kubectl -- port-forward --address 0.0.0.0 service/ingress-nginx-controller 8080:80 -n ingress-nginx
   name: ingress-controller
   annotations: 
     # tells the ingress controller to rewrite paths

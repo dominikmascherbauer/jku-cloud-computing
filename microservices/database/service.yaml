@@ -24,8 +24,10 @@ spec:
             name: db-file
       volumes:
         - name: db-file
+          # this requires mounting /var/data into minikube
+          # minikube mount /var/data:/var/data
           hostPath:
-            path: /var/tennisclub.db
+            path: /var/data/tennisclub.db
             type: File
 
 ---
