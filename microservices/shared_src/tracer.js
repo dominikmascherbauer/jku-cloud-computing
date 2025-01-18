@@ -8,6 +8,8 @@ const {JaegerExporter} = require('@opentelemetry/exporter-jaeger');
 const {ZipkinExporter} = require('@opentelemetry/exporter-zipkin');
 const {HttpInstrumentation} = require('@opentelemetry/instrumentation-http');
 
+const config = require('./config')
+
 // Custom Span Processor to filter out unwanted spans
 class CustomSpanProcessor extends SimpleSpanProcessor {
   onEnd(span) {
@@ -26,11 +28,11 @@ module.exports = (serviceName) => {
     spanProcessors: [
       new SimpleSpanProcessor(new JaegerExporter({
         serviceName,
-        endpoint: 'http://localhost:14268/api/traces'
+        endpoint: `http://${config.jaegerService}:${config.jaegerService.port.collector}/api/traces`
       })),
       new SimpleSpanProcessor(new ZipkinExporter({
         serviceName,
-        url: 'http://localhost:9412/api/v2/spans' // Updated to new port
+        url: `http://${config.zipkinService.name}:${config.zipkinService.port.collector}/api/v2/spans`
       }))
     ]
   });

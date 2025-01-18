@@ -24,5 +24,18 @@ module.exports = {
         port: {
             http: 3000
         }
+    },
+    jaegerService: {
+        name: 'jaeger-service',
+        port: {
+            collector: 14268,
+            ui: 16686 
+        }
+    },
+    zipkinService: {
+        name: 'zipkin-service',
+        port: {
+            collector: 9412  // same for ui
+        }
     }
   };

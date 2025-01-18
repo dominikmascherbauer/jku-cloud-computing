@@ -1,6 +1,5 @@
 # Pull in the layer of the base image: node:16-alpine
 FROM node:16-alpine
-ARG JWT_SECRET=test
 # Set author label: LABEL author=[YOUR-EMAIL]
 LABEL author='michael.haas0612@gmail.com'
 # Set working directory: `/opt`
@@ -16,4 +15,4 @@ COPY ./shared_src .
 # Expose the app port
 EXPOSE 3000
 # Run the app with npm start
-CMD JWT_SECRET=${JWT_SECRET} npm start
+CMD JWT_SECRET=test npm start

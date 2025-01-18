@@ -13,7 +13,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: tennis.example
+  - host: tennis.mascherbauer.com
     http:
       paths:
       - path: /user/(.*)  # captures everything after user
@@ -37,6 +37,20 @@ spec:
             name: data-service
             port: 
               number: 3001
+      - path: /jaeger/(.*)  # captures everything after jaeger
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: jaeger-service
+            port: 
+              number: 16686
+      - path: /zipkin/(.*)  # captures everything after zipkin
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: zipkin-service
+            port: 
+              number: 9412
       - path: /(.*)  # captures everything else
         pathType: ImplementationSpecific
         backend:
