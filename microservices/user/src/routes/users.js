@@ -3,10 +3,10 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const config = require('../../config');
-const tracer = require('../tracer')('user-service');
+const config = require('../config');
+const tracer = require('../tracer')(config.userService.name);
 
-const databaseUrl = config.url.database + 'api';
+const databaseUrl = `http://${config.databaseService.name}:${config.databaseService.port.http}/api`;
 const saltRounds = 10;
 const jwtSecret = process.env.JWT_SECRET;
 

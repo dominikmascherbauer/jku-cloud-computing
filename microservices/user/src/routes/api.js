@@ -2,28 +2,10 @@ const express = require('express');
 const router = express.Router();
 const WebSocket = require('ws');
 const axios = require('axios');
-const config = require('../../config');
-const tracer = require('../tracer')('user-service');
+const config = require('../config');
+const tracer = require('../tracer')(config.userService.name);
 
-const websocketPort = config.port.user.websocket;
-const databaseUrl = config.url.database + 'api';
-
-const wss = new WebSocket.Server({port: websocketPort});
-
-function broadcast(info) {
-  for (broadcastTarget of wss.clients) {
-    if (broadcastTarget.readyState === WebSocket.OPEN) {
-      broadcastTarget.send(JSON.stringify(info));
-    }
-  }
-}
-
-wss.on('connection', (ws, req) => {
-  console.log(`WS Client connected, we now have ${wss.clients.size} connected clients`);
-  ws.on('close', () => {
-    console.log(`Client disconnected, we now have ${wss.clients.size} connected clients`);
-  });
-});
+const databaseUrl = `http://${config.databaseService.name}:${config.databaseService.port.http}/api`;
 
 // Middleware to check if user is logged in
 function isLoggedIn(req, res, next) {

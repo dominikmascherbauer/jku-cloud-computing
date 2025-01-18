@@ -12,9 +12,11 @@ spec:
       labels:
         app: web
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: web
-        image: dominikmascherbauer/web:test11
+        image: dominikmascherbauer/web:latest
+        imagePullPolicy: "Always"
         ports:
         - containerPort: 3000
 ---
@@ -27,7 +29,7 @@ spec:
   selector:
     app: web
   ports:
-  - name: api
+  - name: http
     port: 3000
     protocol: TCP
     targetPort: 3000

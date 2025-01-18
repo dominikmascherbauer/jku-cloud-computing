@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: database
+        image: dominikmascherbauer/database:latest
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+          - mountPath: /opt/tennisclub.db
+            name: db-file
+      volumes:
+        - name: db-file
+          hostPath:
+            path: /var/tennisclub.db
+            type: File
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-service
+spec:
+  selector:
+    app: database
+  ports:
+  - name: http
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+

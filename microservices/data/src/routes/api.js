@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const WebSocket = require('ws');
 const axios = require('axios');
-const config = require('../../config');
-const tracer = require('../tracer')('data-service');
+const config = require('../config');
+const tracer = require('../tracer')(config.dataService.name);
 
-const websocketPort = config.port.data.websocket;
-const databaseUrl = config.url.database + 'api';
-const userUrl = config.url.user + 'api';
+const websocketPort = config.dataService.port.websocket;
+const databaseUrl = `http://${config.databaseService.name}:${config.databaseService.port.http}/api`;
+const userUrl = `http://${config.userService.name}:${config.userService.port.http}/api`;
 
 const wss = new WebSocket.Server({port: websocketPort});
 

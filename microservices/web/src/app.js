@@ -3,7 +3,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
-const tracer = require('./tracer')('web-service');
+var config = require('./config');
+const tracer = require('./tracer')(config.webService.name);
 
 const app = express();
 

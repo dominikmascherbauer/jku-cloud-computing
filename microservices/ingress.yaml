@@ -22,21 +22,21 @@ spec:
           service:
             name: user-service
             port: 
-              number: 3003
+              number: 3000
       - path: /data/(.*)  # captures everything after data
         pathType: ImplementationSpecific
         backend:
           service:
             name: data-service
             port: 
-              number: 3005
+              number: 3000
       - path: /ws/(.*)  # captures everything after ws
         pathType: ImplementationSpecific
         backend:
           service:
             name: data-service
             port: 
-              number: 3006
+              number: 3001
       - path: /(.*)  # captures everything else
         pathType: ImplementationSpecific
         backend:

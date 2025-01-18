@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
-const tracer = require('../tracer')('database-service');
+const config = require('../config');
+const tracer = require('../tracer')(config.databaseService.name);
 
 // Get all users endpoint
 router.get('/user/all', async (req, res) => {

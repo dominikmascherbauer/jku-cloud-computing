@@ -5,17 +5,15 @@ LABEL author='michael.haas0612@gmail.com'
 # Set working directory: `/opt`
 WORKDIR /opt
 # Copy all the source code into the container
-COPY ./data ./data
-# Set working directory: `/opt/data`
-WORKDIR /opt/data
+COPY ./data/src .
 RUN ls -lsa
 # Install dependencies
 RUN npm install
 RUN ls -lsa
-# Copy config file
-COPY ./config.js ../config.js
-# Expose the app port
-EXPOSE 3005
-EXPOSE 3006
+# Copy config and tracer file
+COPY ./shared_src .
+# Expose the http and websocket ports
+EXPOSE 3000
+EXPOSE 3001
 # Run the app with npm start
 CMD ["npm", "start"]
