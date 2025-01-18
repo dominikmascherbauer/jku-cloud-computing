@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TCN</title>
+    <link href="./stylesheets/styles.css" rel="stylesheet">
+    <link href="./stylesheets/watering.css" rel="stylesheet">
+    <script src="./js/vue.global.js"></script>
+    <script src="./js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <header id="header">
+        <h1>Tennisplatzbewässerung</h1>
+        <nav id="navbar">
+            <ul>
+                <li><a href="index.html">Zurück</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section>
+        <div id="courtWatering">
+            <div class="court" v-for="court in courts">
+
+                <span class="courtHeading">Platz {{court.id}}</span>
+                <button @click="isWateringRunning(court)?stopWatering(court): startWatering(court)">
+                    {{isWateringRunning(court) ? 'Bewässerung deaktivieren' : 'Bewässern'}}
+                </button>
+                <span v-if="isWateringRunning(court)">Verbleibende Zeit: {{remainingTimes[court.id]}} Minuten</span>
+                <span v-if="!isWateringRunning(court)">Zuletzt bewässert: {{court.lastWatering.toLocaleString()}}</span>
+            </div>
+        </div>
+
+    </section>
+
+    <footer>
+    </footer>
+</div>
+<script>
+
+
+  const {createApp} = Vue;
+
+  createApp({
+    data: function () {
+      return {
+        courts: [
+          {
+            id: 1,
+            running: false,
+            lastWatering: new Date(),
+          },
+        ],
+        remainingTimes: [],
+        intervalIds: [],
+        jwt: { // Retrieve JWT from local storage
+          token: localStorage.getItem('jwt'),
+          expiresAt: localStorage.getItem('expiresAt') ? new Date(+localStorage.getItem('expiresAt')) : null
+        },
+        wateringDuration: 2,
+        apiUrl: `http://localhost:3005/api/`,
+        ws: null
+      };
+    },
+    mounted() {
+      this.fetchCourts();
+      this.setupWebsocketClient();
+    },
+    methods: {
+      startWatering: function (court) {
+        axios.post(`${this.apiUrl}court/startWatering/${encodeURIComponent(court.id)}`, {}, {headers: this.authorizationHeader()})
+          .catch(error => alert(`Failed to start watering\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
+      },
+      stopWatering: function (court) {
+        axios.post(`${this.apiUrl}court/stopWatering/${encodeURIComponent(court.id)}`, {}, {headers: this.authorizationHeader()})
+          .catch(error => alert(`Failed to start watering\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
+        court.running = false;
+
+      },
+      updateRemainingTime: function (court) {
+        this.remainingTimes[court.id] = this.wateringDuration - Math.floor((new Date() - court.lastWatering) / (1000 * 60));
+        if (this.remainingTimes[court.id] <= 0) this.stopInterval(court);
+      },
+      isWateringRunning: function (court) {
+        return court.running && (new Date() - court.lastWatering) / (1000 * 60) < this.wateringDuration;
+      },
+      stopInterval(court) {
+        clearInterval(this.intervalIds[court.id]);
+        this.intervalIds[court.id] = -1;
+      },
+      authorizationHeader() {
+        return this.jwt.token ? {'Authorization': `Bearer ${this.jwt.token}`} : {};
+      },
+      fetchCourts() {
+        axios.get(`${this.apiUrl}/court/all`, {headers: this.authorizationHeader()})
+          .then(response => {
+              response.data.forEach(court => {
+                  this.intervalIds[court.id] = -1;
+                  this.remainingTimes[court.id] = -1;
+                  court.lastWatering = new Date(court.lastWatering);
+                }
+              );
+              this.courts = response.data;
+            }
+          ).catch(error => alert(`Failed to fetch all courts \nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
+      },
+      setupWebsocketClient() {
+        try {
+          const websocket = new WebSocket('ws://localhost:3006');
+          this.ws = websocket;
+          vue = this;
+
+          websocket.onmessage = function (event) {
+            const message = JSON.parse(event.data);
+            if (message.entity === 'watering') {
+              switch (message.op) {
+                case 'start':
+                  court = vue.courts.find(court => message.data.courtId == court.id);
+                  court.lastWatering = new Date(message.data.lastWatering);
+                  court.running = true;
+                  break;
+                case 'stop':
+                  court = vue.courts.find(court => message.data.courtId == court.id);
+                  court.running = false;
+                  break;
+              }
+            }
+          };
+
+          websocket.onerror = function (event) {
+            alert('Error occurred while connecting to the WebSocket server');
+          };
+
+        } catch (ex) {
+          alert(ex);
+        }
+      },
+    },
+    watch: {
+      courts: {
+        handler(value, oldValue) {
+          oldValue.forEach(court => {
+            if (this.intervalIds[court.id] >= 0) {
+              clearInterval(this.intervalIds[court.id]);
+            }
+          });
+          value.forEach(court => {
+            if (this.isWateringRunning(court)) {
+              this.updateRemainingTime(court);
+              this.intervalIds[court.id] = setInterval(this.updateRemainingTime, 1000, court);
+            }
+          });
+        },
+        deep: true
+      }
+    }
+  }).mount('#app');
+</script>
+
+</body>
+</html>

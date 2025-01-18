@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TCN</title>
+    <link href="./stylesheets/styles.css" rel="stylesheet">
+    <link href="./stylesheets/general.css" rel="stylesheet">
+    <script src="./js/vue.global.js"></script>
+    <script src="./js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <header id="header">
+        <h1>Allgemeines</h1>
+        <nav id="navbar">
+            <ul>
+                <li><a href="index.html">Zurück</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        Herzlich Willkommen beim TC Neumarkt.
+        <article v-for="item in articles">
+            <h1 id="articleHeader">{{item.heading}}</h1>
+            <p>{{item.text}}</p>
+        </article>
+    </main>
+</div>
+<script>
+  const {createApp} = Vue;
+
+  createApp({
+    data: function () {
+      return {
+        articles: [
+          {heading: 'Mitgliedschaft', text: 'text'},
+          {heading: 'Termine', text: 'text'},
+          {heading: 'Vorstand', text: 'text'},
+        ],
+        jwt: { // Retrieve JWT from local storage
+          token: localStorage.getItem('jwt'),
+          expiresAt: localStorage.getItem('expiresAt') ? new Date(+localStorage.getItem('expiresAt')) : null
+        },
+        apiUrl: `http://localhost:3005/api/`
+      };
+    },
+    mounted() {
+      this.fetchArticles();
+    },
+    methods: {
+      authorizationHeader() {
+        return this.jwt.token ? {'Authorization': `Bearer ${this.jwt.token}`} : {};
+      },
+      fetchArticles() {
+        axios.get(`${this.apiUrl}/article/all`, {headers: this.authorizationHeader()})
+          .then(response => this.articles = response.data)
+          .catch(error => alert(`Failed to fetch all articles \nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
+      },
+    }
+  }).mount('#app');
+</script>
+</body>
+</html>
