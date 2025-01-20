@@ -16,12 +16,12 @@ Another goal of this project is to experiment with monitoring for microservices 
 
 ## Setup
 
-The frontend of the web application uses HTML, CSS and Javascript as well as the Vue framework.
-The content displayed on a page is fetched by a request to the corresponding microservice.
-The microservices are written in Javascript and run on NodeJS.
-The database service is responsible for retrieving data from the NoSQL-database and forwards the data to a microservice.
-In order to handle multi-user access websockets are integrated as well.
-A push or pull request on the repository will start a CI pipeline which creates docker images for each microservice and stores them on Dockerhub
+- The frontend of the web application uses HTML, CSS and Javascript as well as the Vue framework.
+- The content displayed on a page is fetched by a request to the corresponding microservice.
+- The microservices are written in Javascript and run on NodeJS.
+- The database service is responsible for retrieving data from the NoSQL-database and forwards the data to a microservice.
+- In order to handle multi-user access websockets are integrated as well.
+- A push or pull request on the repository will start a CI pipeline which creates docker images for each microservice and stores them on Dockerhub.
 
 
 ## Summary of Research
@@ -29,3 +29,10 @@ A push or pull request on the repository will start a CI pipeline which creates 
 ## Tutorial
 
 ## Lessons-learned
+
+- Conversion of a monolith webapp to multiple microservices offering the same functionality.
+- Creation of correct dockerfiles for the microservices
+- Automatic building of docker images and pushing on Dockerhub through a CI pipeline
+- Integration of OpenTelemetry into the microservices
+- Setting up Ingress to forward routes from the frontend to the correct microservice
+- Setting up Minikube to execute the services on our local server
