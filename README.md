@@ -36,7 +36,7 @@ The overall architecture for the microservice communication looks as follows:
 The deployment is structured as follows:
 ![Deployment](Deployment.png)
 
-- For hosting the Kubernetes cluster, we use an Ubuntu server VM with minikube.
+- For hosting the Kubernetes cluster, we use an Ubuntu server VM (Ubuntu Server 24.04LTS) with minikube.
 - The microservices are deployed as pods in a deployment that is accessed by a service.
 - Each deployment pulls the newest image for a microservice from DockerHub.
 - A change on the master branch will start a CI pipeline that creates docker images for each microservice and stores them on DockerHub.
@@ -45,13 +45,32 @@ The deployment is structured as follows:
 - The port of the ingress controller is exposed to the end user.
 - The Jaeger container is also deployed in the Kubernetes cluster and accessed via a service (same for Zipkin, not shown in the picture).
 - For testing purposes, the monitoring UI is directly exposed on the Host VM for access from the internet.
-- To persist changes in the database, the database is stored on the Host VM and mounted into minikube. In minikube the database is then mounted into the databse pod.
+- To persist changes in the database, the database is stored on the Host VM and mounted into minikube. In minikube the database is then mounted into the database pod.
 - To keep the cluster running, we installed some services on the Host VM that maintain the database mount and port forwards.
 
 
 ## Summary of Research
 
 ## Tutorial
+
+### Setup Development Environment
+The repository contains code to deploy the microservices locally without a Kubernetes cluster to deploy to.
+
+
+
+### Setup Host VM
+
+The Host VM is a virtual machine running on a server. It is used to run a Kubernetes cluster with minikube and expose the web application to end users.
+
+#### Setting up the VM
+
+Download an Ubuntu Server iso [here](https://ubuntu.com/download/server). Preferably use an LTS version (24.04 was used for this deployment).
+```shell
+wget https://releases.ubuntu.com/24.04/ubuntu-24.04.1-live-server-amd64.iso
+```
+
+Create a new virtual machine with this image and install it. Make sure to use at least 30GB of disk space and 4GB of RAM.
+
 
 ## Lessons-learned
 
