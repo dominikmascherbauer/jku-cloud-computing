@@ -110,19 +110,22 @@ minikube addons enable ingress
 
 ### Deploy the project
 
-This guide assumes the following steps are done with the user's current home directory as the working directory because minikube is designed to be run as non-root user.
+This guide assumes the following steps are done with the _opt_ directory as the working directory. Minikube is designed to run as non-root user, so make sure to have the correct permissions on the files.
+
+To simplify the setup for this guide we set the permission of the /opt to _rwx_ for everyone. This is usually not recommended, but it is done to provide a common working directory independent of the VM user.
 
 1. Navigate to the working directory
 ```shell
-cd /home/<username>
+sudo chmod 777 /opt
+cd /opt
 ```
 2. Clone project repository
 ```shell
-git clone https://github.com/dominikmascherbauer/jku-cloud-computing.git tennis-website
+git clone https://github.com/dominikmascherbauer/jku-cloud-computing.git
 ```
 or if you want to setup an ssh key for the virtual machine
 ```shell
-git clone git@github.com:dominikmascherbauer/jku-cloud-computing.git tennis-website
+git clone git@github.com:dominikmascherbauer/jku-cloud-computing.git
 ```
 3. Mount database file into minikube
 
@@ -131,15 +134,15 @@ First, we want to copy the database file out of the repository, to be able to pu
 **_NOTE:_**  The mount must be kept alive while the website is running. We will explain how to automate this on the VM later.
 ```shell
 mkdir db
-cp tennis-website/microservices/database/tennisclub.db db/tennisclub.db
-minikube mount /home/<username>/db:/var/data
+cp jku-cloud-computing/microservices/database/tennisclub.db db/tennisclub.db
+minikube mount /opt/db:/var/data
 ```
 
 4. Deploy the services
 
 This step assumes that minikube is already up and running, so we just need to apply the kubelets.
 ```shell
-cd tennis-website/microservices
+cd jku-cloud-computing/microservices
 minikube kubectl -- apply -f ingress.yaml
 minikube kubectl -- apply -f jaeger.yaml
 minikube kubectl -- apply -f zipkin.yaml
@@ -166,39 +169,40 @@ In this part, we want to discuss how to automatically deploy the services, and m
 
 We will also be able to reuse the automatic deployment script for re-deploying the services if the kubelets change.
 
-For convenience, we will also explain this step with the user's home directory a our working directory. Therefore, we will need a subfolder and the following scripts:
+For convenience, we will also explain this step with the user's home directory a our working directory. Therefore, we will need [bash scripts](../systemd_services/scripts) and [systemd services](../systemd_services/services) that need to be placed in appropriate directories. Here we assume the repository was cloned to _/opt/jku-cloud-computing_:
+```shell
+cd /opt
+mkdir scripts
+cp jku-cloud-computing/systemd_services/scripts/* scripts/
+sudo cp jku-cloud-computing/systemd_services/services/* /etc/systemd/system
+```
 
-**_TODO Add dir creation and ls output_**
+The next step is to enable the systemd services and either start them or reboot the system.
+```shell
+sudo systemctl daemon-reload
 
-and systemd services:
+sudo systemctl enable minikubeStart
+sudo systemctl enable minikubeMount
+sudo systemctl enable deployServices
+sudo systemctl enable ingressPort
+sudo systemctl enable jaegerPort
+sudo systemctl enable zipkinPort
 
-**_TODO output of systemd_**
+sudo systemctl start minikubeStart
+sudo systemctl start minikubeMount
+sudo systemctl start deployServices
+sudo systemctl start ingressPort
+sudo systemctl start jaegerPort
+sudo systemctl start zipkinPort
+```
 
-1. Deploy on startup
-
-This requires two steps, starting minikube and deploying the services which we do with the following scripts:
-
-**_TODO Add scripts_**
-
-which are packed into two services:
-
-**_TODO Add scripts_**
-
-2. Mount database directory
-
-**_TODO Add scripts_**
-
-The service for this script will only start if minikube is running, and automatically restart if it crashes:
-
-**_TODO Add scripts_**
-
-3. Port forwarding
-
-**_TODO Add scripts_**
-
-Similar to the mount script, the systemd services rely on minikube being available and also restart if they crash.
-
-**_TODO Add scripts_**
+Explanation of the services:
+- minikubeStart: run `minikube start` and wait until minikube is up and running
+- minikubeMount: mounts the _/opt/db_ into minikube (automatically restarts)
+- deployServices: apply all kubelets in _/opt/jku-cloud-computing_ (only runs once minikubeMount is running)
+- ingressPort: port-forward the port of the ingress controller (automatically restarts)
+- jaegerPort: port-forward the port of the Jaeger UI (automatically restarts)
+- zipkinPort: port-forward the port of the Zipkin UI (automatically restarts)
 
 
 ## Update the deployment
