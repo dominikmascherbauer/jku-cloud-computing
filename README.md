@@ -192,7 +192,7 @@ For this project, we used an ingress controller for routing requests to the micr
 minikube addons enable ingress
 ```
 
-III. Deploy the project
+#### Deploy the project
 
 This guide assumes the following steps are done with the user's current home directory as the working directory because minikube is designed to be run as non-root user.
 
@@ -244,7 +244,7 @@ minikube kubectl -- port-forward --address 0.0.0.0 service/jaeger-service 16686:
 minikube kubectl -- port-forward --address 0.0.0.0 service/zipkin-service 9411:9411
 ```
 
-IV. Automate VM
+#### Automate VM
 
 In this part, we want to discuss how to automatically deploy the services, and make sure the mount and port forwards are kept alive. This will be achieved by some bash scripts and systemd services.
 
