@@ -1,3 +1,3 @@
 #!/bin/bash
 
-minikube mount /var/data:/var/data
+minikube mount /opt/db:/var/data
