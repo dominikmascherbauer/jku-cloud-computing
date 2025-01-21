@@ -1,0 +1,13 @@
+[Unit]
+Description=Service that minikube mounts /var/data to minikube
+After=network.target minikubeStart.service
+
+[Service]
+ExecStart=/opt/scripts/minikubeMount.sh
+Restart=always
+RestartSec=30
+User=dominik
+
+[Install]
+WantedBy=multi-user.target
+

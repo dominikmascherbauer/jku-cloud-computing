@@ -1,0 +1,13 @@
+[Unit]
+Description=Starts port forwarding for jaeger ui port in minikube
+After=network.target minikubeStart.service
+
+[Service]
+ExecStart=/opt/scripts/jaegerPort.sh
+Restart=always
+RestartSec=30
+User=dominik
+
+[Install]
+WantedBy=multi-user.target
+

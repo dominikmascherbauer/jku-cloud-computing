@@ -1,0 +1,13 @@
+[Unit]
+Description=Start port forwarding for ingress controler in minikube
+After=network.target minikubeStart.service
+
+[Service]
+ExecStart=/opt/scripts/ingressPort.sh
+Restart=always
+RestartSec=30
+User=dominik
+
+[Install]
+WantedBy=multi-user.target
+

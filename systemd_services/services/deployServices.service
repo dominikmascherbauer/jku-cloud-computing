@@ -1,0 +1,12 @@
+[Unit]
+Description=Deploy services in minikube
+After=network.target minikubeMount.service
+Requires=minikubeMount.service
+
+[Service]
+ExecStart=/opt/scripts/deployServices.sh
+User=dominik
+
+[Install]
+WantedBy=multi-user.target
+

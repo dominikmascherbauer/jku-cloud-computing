@@ -1,0 +1,11 @@
+[Unit]
+Description=Service that starts minikube
+After=network.target
+
+[Service]
+ExecStart=/opt/scripts/minikubeStart.sh
+User=dominik
+
+[Install]
+WantedBy=multi-user.target
+

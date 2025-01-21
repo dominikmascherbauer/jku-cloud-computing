@@ -1,0 +1,13 @@
+[Unit]
+Description=Start port forwarding for zipkin in minikube
+After=network.target minikubeStart.service
+
+[Service]
+ExecStart=/opt/scripts/zipkinPort.sh
+Restart=always
+RestartSec=30
+User=dominik
+
+[Install]
+WantedBy=multi-user.target
+
