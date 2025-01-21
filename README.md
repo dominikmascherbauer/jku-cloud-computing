@@ -52,41 +52,38 @@ The deployment is structured as follows:
 ## Summary of Research
 - [NodeJS](https://nodejs.org/en) 16
   - Represents a Javascript environment for executing Javascript outside of a browser
-  - For our project we use it to execute the code of our backend
+  - For our project, we use it to execute the code of our backend
 - [SQLite](https://www.sqlite.org/)
   - A library that can be linked in programs using a relational database model to store data in a file
-  - The database services uses this library to store and retrieve data
+  - The database service uses this library to store and retrieve data
 - [WebSockets](https://developer.mozilla.org/de/docs/Web/API/WebSockets_API)
   - Make bidirectional communication between the server and the client possible
   - Therefore allow the server to inform the client that some events happened
-  - We use it to update the reservation and watering page on multi user access
+  - We use it to update the reservation and watering page on multi-user access
  - [Opentelemetry](https://opentelemetry.io/)
    - OpenSource Framework to generate, process, and transmit telemetry data in a single, unified format
-   - In our project it is used to save the information of requests to and responses from the backend
+   - In our project, it is used to save the information of requests to and responses from the backend
 - [Jaeger collector](https://www.jaegertracing.io/docs/1.21/opentelemetry/) and [Zipkin collector](https://zipkin.io/pages/architecture.html)
   - Reads the data produced by opentelemetry and displays it in a graphical user interface
   - We used both frameworks to compare the visual comparison
 - [MiniKube](https://minikube.sigs.k8s.io/docs/start/)
-  - Provides the possibility to run a Kuberenetes cluster on a local machine
+  - Provides the possibility to run a Kubernetes cluster on a local machine
   - Our services run in Minikube on a Ubuntu server VM
 - [Docker](https://www.docker.com/)
   - A runtime for executing docker containers
-  - Each of our services runs in its own docker container
+  - Each of our services runs in a docker container
 - [Github Actions](https://docs.github.com/de/actions)
-  - Runs a series of commands after a certain event has occured 
-  - We use it to automatically build our Docker images and to push them to Dockerhub after pull and pull-requests 
+  - Runs a series of commands after a certain event has occurred 
+  - We use it to automatically build our Docker images and to push them to Dockerhub after pull and pull requests 
 - [Systemd](https://wiki.ubuntuusers.de/systemd/)
   - A service manager for Linux operating systems that brings up and manages userspace service
-  - We use a service to start the Kubernetes cluster, to mount a persistent database into the cluster and to port forward the request from the host to the Kubernetes cluster
+  - We use a service to start the Kubernetes cluster, mount a persistent database into the cluster, and port forward the request from the host to the Kubernetes cluster
 
 ## Tutorial
 
-### Setup Development Environment
-The repository contains code to deploy the microservices locally without a Kubernetes cluster to deploy to.
+This tutorial is split into two parts. First, we cover how to set up a virtual machine with minikube and deploy the services in it. Then we explain how to make changes to the website and update the deployments.
 
-
-
-### Setup Host VM
+### Deploy Services
 
 We decided to run a virtual machine on a server to host our Kubernetes cluster with minikube. The following describes how to setup the virtual machine.
 
@@ -283,6 +280,34 @@ The service for this script will only start if minikube is running, and automati
 Similar to the mount script, the systemd services rely on minikube being available and also restart if they crash.
 
 **_TODO Add scripts_**
+
+
+### Update the deployment
+
+This guide requires the virtual machine in the previous step to be set up.
+
+1. Update the source code:
+  - The source code for the microservices that are deployed can be found in [_microservices_](microservices).
+  - The [_shared_src_](microservices/shared_src) directory contains javascript source files that are copied into all docker files.
+  - The _src_ directory in each of the microservice sub-directories contains the rest of the code for each microservice.
+  - The Dockerfiles can also be found in the microservice sub-directories and are designed to use [_microservices_](microservices) as their context.
+  - The kubelets are also found within the [_microservices_](microservices) directory, and the microservice sub-directories.
+  
+2. Rebuild container images
+  - Make sure to change the DockerHub username in the kubelet of the changed container image.
+  - By default, we pull the _latest_ tag in the kubelet, if no tag is specified. Thus the example shown also pushes to the _latest_ tag.
+  - Navigate to the [_microservices_](microservices) directory and run docker build:
+  ```shell
+  docker build -f <servicename>/Dockerfile <dockerhubuser>/<servicename> .
+  docker push <dockerhubuser>/<servicename>
+  ```
+
+3. Update deployments
+  - SSH into the VM
+  - Navigate to the microservices and update the desired kubelet
+     - make sure to set the correct image name for the docker image
+  - If changes were made to the kubelet, run the deployment script **_TODO Add run script command_**
+  - If no changes were made stop the pods that should receive an update. The new image is pulled when a new pod is created by the deployment.
 
 
 ## Lessons-learned
