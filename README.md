@@ -26,7 +26,7 @@ The overall architecture for the microservice communication looks as follows:
 - The frontend of the web application uses HTML, CSS and Javascript as well as the VueJS framework.
 - The content displayed on a page is fetched by a request to the corresponding microservice.
 - The microservices are written in Javascript and run on NodeJS 16.
-- The database service is responsible for retrieving data from the MySQL-database and forwards the data to a microservice.
+- The database service is responsible for retrieving data from the SQLite-database and forwards the data to a microservice.
 - In order to handle multi-user access websockets are integrated as well.
 - Requests between microservices are traced with opentelemitry and forwarded by a Jaeger collector (and Zipkin collector) to the monitoring services (Jaeger and Zipkin).
 
