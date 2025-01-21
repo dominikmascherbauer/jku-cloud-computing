@@ -1,0 +1,29 @@
+# Summary of Research
+- [NodeJS](https://nodejs.org/en) 16
+  - Represents a Javascript environment for executing Javascript outside of a browser
+  - For our project, we use it to execute the code of our backend
+- [SQLite](https://www.sqlite.org/)
+  - A library that can be linked in programs using a relational database model to store data in a file
+  - The database service uses this library to store and retrieve data
+- [WebSockets](https://developer.mozilla.org/de/docs/Web/API/WebSockets_API)
+  - Make bidirectional communication between the server and the client possible
+  - Therefore allow the server to inform the client that some events happened
+  - We use it to update the reservation and watering page on multi-user access
+ - [Opentelemetry](https://opentelemetry.io/)
+   - OpenSource Framework to generate, process, and transmit telemetry data in a single, unified format
+   - In our project, it is used to save the information of requests to and responses from the backend
+- [Jaeger collector](https://www.jaegertracing.io/docs/1.21/opentelemetry/) and [Zipkin collector](https://zipkin.io/pages/architecture.html)
+  - Reads the data produced by opentelemetry and displays it in a graphical user interface
+  - We used both frameworks to compare the visual comparison
+- [MiniKube](https://minikube.sigs.k8s.io/docs/start/)
+  - Provides the possibility to run a Kubernetes cluster on a local machine
+  - Our services run in Minikube on a Ubuntu server VM
+- [Docker](https://www.docker.com/)
+  - A runtime for executing docker containers
+  - Each of our services runs in a docker container
+- [Github Actions](https://docs.github.com/de/actions)
+  - Runs a series of commands after a certain event has occurred
+  - We use it to automatically build our Docker images and to push them to Dockerhub after pull and pull requests
+- [Systemd](https://wiki.ubuntuusers.de/systemd/)
+  - A service manager for Linux operating systems that brings up and manages userspace service
+  - We use a service to start the Kubernetes cluster, mount a persistent database into the cluster, and port forward the request from the host to the Kubernetes cluster
