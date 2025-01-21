@@ -1,131 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>TCN</title>
-    <link rel="stylesheet" href="./stylesheets/styles.css">
-    <link rel="stylesheet" href="./stylesheets/index.css">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tennis Club Neumarkt</title>
+    <link rel="stylesheet" href="./stylesheets/styles.css" />
+    <link rel="stylesheet" href="./stylesheets/index.css" />
     <script src="./js/vue.global.js"></script>
     <script src="./js/axios.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div id="app">
-    <header id="header">
-        <h1>TC Neumarkt</h1>
-        <nav id="navbar">
+      <header>
+        <div id="menu">
+          <div>
+            <img src="images/tennis.svg" alt="Tennis player" />
+            <h1>Tennis Club Neumarkt</h1>
+          </div>
+          <nav id="navbar">
             <ul>
-                <li><a href="general.html">Allgemeines</a></li>
-                <li v-if="loggedIn"><a href="reservation.html">Tennisplatzreservierung</a></li>
-                <li v-if="loggedIn"><a href="watering.html">Tennisplatzbewässerung</a></li>
-                <li v-if="isAdmin"><a href="admin.html">Adminportal</a></li>
-                <li v-if="loggedIn"><a @click="logout" href="#">Logout</a></li>
+              <li><a href="/">Main page</a></li>
+              <li v-if="loggedIn">
+                <a href="reservation.html">Tennis court reservation</a>
+              </li>
+              <li v-if="loggedIn">
+                <a href="watering.html">Tennis court watering</a>
+              </li>
             </ul>
-        </nav>
-    </header>
-    
-    <main>
-        <div id="login"  v-if="!loggedIn">
-            <h2 style="text-align: center;">Bitte loggen Sie sich ein</h2>
+          </nav>
+        </div>
+        <div>
+          <div id="userInfo" v-if="loggedIn === true">
+            <p>Welcome, <span id="loggedInUser">{{user}}</span>!</p>
+            <div>
+              <a href="admin.html">Admin portal</a>
+              <a @click="logout" href="/">Logout</a>
+            </div>
+          </div>
+          <div v-if="loggedIn === false">
             <form @submit.prevent="loginAxios" id="loginForm">
-                <label for="loginEmail">Email:</label>
-                <input type="email" id="loginEmail" v-model="loginEmail" required>
-                <label for="loginPassword">Passwort:</label>
-                <input type="password" id="loginPassword" v-model="loginPassword" required>
-                <input type="submit" value="Login" id="submitButton"></input>
+              <label for="loginEmail"
+                >Email:
+                <input
+                  type="email"
+                  id="loginEmail"
+                  v-model="loginEmail"
+                  required
+                />
+              </label>
+              <label for="loginPassword"
+                >Password:
+                <input
+                  type="password"
+                  id="loginPassword"
+                  v-model="loginPassword"
+                  required
+                />
+              </label>
+              <button type="submit" id="submitButton">Login</button>
             </form>
+          </div>
         </div>
-        <div id="userInfo" v-if="loggedIn">
-            <p style="text-align: center;">Willkommen, <span id="loggedInUser">{{user}}</span>!</p>
-        </div>
+      </header>
 
-    </main>
+      <main>
+        <h2>Welcome to TC Neumarkt</h2>
+        <img src="images/players.svg" width="500px" alt="Tennis players" />
+        <article v-if="articlesFetched" v-for="item in articles">
+          <h1 id="articleHeader">{{item.heading}}</h1>
+          <p>{{item.text}}</p>
+        </article>
+      </main>
 
-    <footer>
-        TC NEUMARKT
-        Freizeitzentrum 5
-        3371 Neumarkt an der Ybbs
-        e-Mail: tennis@tennissport.at
-    </footer>
-</div>
+      <footer>
+        Tennisverein Neumarkt an der Ybbs |
+        <a href="https://maps.app.goo.gl/nqSfC7pE9LfXt9AGA" target="_blank"
+          >Freizeitzentrum 5, 3371 Neumarkt an der Ybbs</a
+        >
+        | <a href="mailto:tennis@tennissport.at"> tennis@tennissport.at</a>
+      </footer>
+    </div>
     <script>
-        const { createApp } = Vue
-    
-        createApp({
-          data: function() {
-            return {
-                loginEmail: '',
-                loginPassword: '',
-                user: '',
-                loggedIn: false,
-                isAdmin: false,
-                jwt: { // Retrieve JWT from local storage
-                    token: localStorage.getItem("jwt"),
-                    expiresAt: localStorage.getItem("expiresAt") ? new Date(+localStorage.getItem("expiresAt")) : null
-                },
-                apiUrl:`http://localhost:3000/api/`
+      const { createApp } = Vue;
+
+      createApp({
+        data: function () {
+          return {
+            articles: [
+              { heading: "Mitgliedschaft", text: "text" },
+              { heading: "Termine", text: "text" },
+              { heading: "Vorstand", text: "text" },
+            ],
+            articlesFetched: false,
+            loginEmail: "",
+            loginPassword: "",
+            user: "",
+            loggedIn: undefined,
+            isAdmin: undefined,
+            jwt: {
+              // Retrieve JWT from local storage
+              token: localStorage.getItem("jwt"),
+              expiresAt: localStorage.getItem("expiresAt")
+                ? new Date(+localStorage.getItem("expiresAt"))
+                : null,
+            },
+            apiUrl: `http://localhost:3000/api/`,
+          };
+        },
+        watch: {
+          jwt: {
+            handler: function (newValue, oldValue) {
+              this.updateUserInformation();
+            },
+            deep: true,
+            immediate: true,
+          },
+        },
+        mounted() {
+          this.fetchArticles();
+        },
+        methods: {
+          loginAxios() {
+            const url = "http://localhost:3000/user_handling/login";
+            axios
+              .post(url, { mail: this.loginEmail, pw: this.loginPassword })
+              .then((response) => {
+                const { token, expiresAt, name, isAdmin } = response.data;
+                localStorage.setItem("jwt", token);
+                localStorage.setItem("expiresAt", expiresAt);
+                this.jwt.token = token;
+                this.jwt.expiresAt = new Date(+expiresAt);
+                this.loginEmail = "";
+                this.loginPassword = "";
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                alert(
+                  `Login failed\nCode: ${error.code}\nMessage: ${
+                    error.message
+                  }\nResponse: ${JSON.stringify(error.response, null, 2)}`
+                );
+              });
+          },
+          authorizationHeader() {
+            return this.jwt.token
+              ? { Authorization: `Bearer ${this.jwt.token}` }
+              : {};
+          },
+          updateUserInformation() {
+            // no token so user not logged in
+            if (this.jwt.token == null) {
+              this.loggedIn = false;
+              this.isAdmin = false;
+              // token exists check if valid
+            } else {
+              axios
+                .get(`${this.apiUrl}user/information`, {
+                  headers: this.authorizationHeader(),
+                })
+                .then((response) => {
+                  if (response.data == "") {
+                    this.loggedIn = false;
+                    this.isAdmin = false;
+                  } else {
+                    this.user = response.data.name;
+                    this.loggedIn = true;
+                    this.isAdmin = response.data.isAdmin;
+                  }
+                })
+                .catch((error) =>
+                  alert(
+                    `Failed to fetch user information \nCode: ${
+                      error.code
+                    }\nMessage: ${error.message}\nResponse: ${JSON.stringify(
+                      error.response,
+                      null,
+                      2
+                    )}`
+                  )
+                );
             }
           },
-          watch:{
-            jwt:{
-                handler:function(newValue, oldValue){
-                    this.updateUserInformation()
-                },
-                deep: true,
-                immediate: true
-            } 
+          logout() {
+            localStorage.clear();
+            this.jwt.token = null;
+            this.jwt.expiresAt = null;
           },
-          methods: {
-            loginAxios() {
-                const url = 'http://localhost:3000/user_handling/login'
-                axios.post(url, { mail: this.loginEmail, pw: this.loginPassword })
-                    .then(response => {
-                        const { token, expiresAt, name, isAdmin } = response.data
-                        localStorage.setItem('jwt', token)
-                        localStorage.setItem('expiresAt', expiresAt)
-                        this.jwt.token=token
-                        this.jwt.expiresAt = new Date(+expiresAt)
-                        this.loginEmail=''
-                        this.loginPassword=''
-                    })
-                    .catch(error => {
-                        console.error('Error:', error)
-                        alert(`Login failed\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`);
-                    })
-            },
-            authorizationHeader() {
-                return this.jwt.token ? { 'Authorization': `Bearer ${this.jwt.token}` } : {};
-            },
-            updateUserInformation(){
-                // no token so user not logged in
-                if(this.jwt.token==null){
-                    this.loggedIn=false
-                     this.isAdmin=false
-                // token exists check if valid
-                }else{
-                    axios.get(`${this.apiUrl}user/information`, { headers: this.authorizationHeader() })
-                    .then(response => {
-                        if(response.data=='') {
-                            this.loggedIn=false
-                            this.isAdmin=false
-                        }else{
-                            this.user=response.data.name
-                            this.loggedIn=true
-                            this.isAdmin=response.data.isAdmin
-                        }
-                        })
-                    .catch(error => alert(`Failed to fetch user information \nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`))
-                }
-
-            },
-            logout(){
-                localStorage.clear()
-                this.jwt.token=null
-                this.jwt.expiresAt=null
-            }
-          }
-        }).mount('#app')
-      </script>
-    
-
-</body>
+          fetchArticles() {
+            axios
+              .get(`${this.apiUrl}/article/all`, {
+                headers: this.authorizationHeader(),
+              })
+              .then((response) => {
+                this.articles = response.data;
+                this.articlesFetched = true;
+              })
+              .catch((error) =>
+                alert(
+                  `Failed to fetch all articles \nCode: ${
+                    error.code
+                  }\nMessage: ${error.message}\nResponse: ${JSON.stringify(
+                    error.response,
+                    null,
+                    2
+                  )}`
+                )
+              );
+          },
+        },
+      }).mount("#app");
+    </script>
+  </body>
 </html>
