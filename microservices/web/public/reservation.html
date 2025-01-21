@@ -1,199 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>TCN</title>
-    <link href="./stylesheets/styles.css" rel="stylesheet">
-    <link href="./stylesheets/reservation.css" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reservation</title>
+    <link rel="stylesheet" href="./stylesheets/styles.css" />
+    <link rel="stylesheet" href="./stylesheets/reservation.css" />
     <script src="./js/vue.global.js"></script>
     <script src="./js/axios.min.js"></script>
-</head>
-<body>
-<div id="app">
-    <header>
-        <h1>Tennisplatzreservierung</h1>
-        <nav>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <div id="menu">
+          <div>
+            <img src="images/tennis.svg" alt="Tennis player" />
+            <h1>Tennis Club Neumarkt</h1>
+          </div>
+          <nav id="navbar">
             <ul>
-                <li><a href="index.html">Zurück</a></li>
+              <li><a href="/">Main page</a></li>
+              <li v-if="loggedIn">
+                <a href="reservation.html">Tennis court reservation</a>
+              </li>
+              <li v-if="loggedIn">
+                <a href="watering.html">Tennis court watering</a>
+              </li>
             </ul>
-        </nav>
-    </header>
-
-    <main>
+          </nav>
+        </div>
         <div>
-            <div class="court" v-for="court in courts">
-                <h1>{{court.description}}</h1>
-                <ul id="courtReservations">
-                    <li v-for="i in Array(court.availabilityEndHour-court.availabilityStartHour).keys()">
-                        <div style='text-align: center;'>
-                            {{String(court.availabilityStartHour + i).padStart(2, '0')}}:00-{{court.availabilityStartHour + i + 1}}:00
-                        </div>
-                        <button :disabled="court.reservations.includes(court.availabilityStartHour+i) || court.unavailabilities.includes(court.availabilityStartHour+i)"
-                                @click="addReservation(court, court.availabilityStartHour+i)">
-                            {{court.reservations.includes(court.availabilityStartHour + i) ? 'Reserviert' : court.unavailabilities.includes(court.availabilityStartHour + i) ? 'Nicht verfügbar' : 'Reservieren'}}
-                        </button>
-                    </li>
-                </ul>
+          <div id="userInfo" v-if="loggedIn === true">
+            <p>Welcome, <span id="loggedInUser">{{user}}</span>!</p>
+            <div>
+              <a href="admin.html">Admin portal</a>
+              <a @click="logout" href="/">Logout</a>
             </div>
+          </div>
+          <div v-if="loggedIn === false">
+            <form @submit.prevent="loginAxios" id="loginForm">
+              <label for="loginEmail"
+                >Email:
+                <input
+                  type="email"
+                  id="loginEmail"
+                  v-model="loginEmail"
+                  required
+                />
+              </label>
+              <label for="loginPassword"
+                >Password:
+                <input
+                  type="password"
+                  id="loginPassword"
+                  v-model="loginPassword"
+                  required
+                />
+              </label>
+              <button type="submit" id="submitButton">Login</button>
+            </form>
+          </div>
         </div>
-        <div id="chooseDate">
-            <h1>Wähle das Datum aus</h1>
-            <select id="dates" name="dates" v-model="selectedDate">
-                <option :value="calculateDate(i)" v-for="i in Array(lookAheadDays).keys()">
-                    {{dateToString(calculateDate(i))}}
-                </option>
-            </select>
-        </div>
-        <div id="personalReservations">
-            <h1>Deine Reservierungen</h1>
-            <ul id="personalReservation">
-                <li v-for="reservation in personalReservations">
-                    {{courts.find(court => court.id === reservation.courtId).description}}:
-                    {{dateToString(reservation.date)}}
-                    {{String(reservation.startHour).padStart(2, '0')}}:00-{{reservation.startHour + 1}}:00
-                    <button @click="deleteReservation(reservation)">Entfernen</button>
+      </header>
+
+      <main>
+        <h1>Tennis court reservation</h1>
+        <div>
+          <div>
+            <div class="court" v-for="court in courts">
+              <h1>{{court.description}}</h1>
+              <ul id="courtReservations">
+                <li
+                  v-for="i in Array(court.availabilityEndHour-court.availabilityStartHour).keys()"
+                >
+                  <div style="text-align: center">
+                    {{String(court.availabilityStartHour+i).padStart(2,
+                    '0')}}:00-{{court.availabilityStartHour+i+1}}:00
+                  </div>
+                  <button
+                    :disabled="court.reservations.includes(court.availabilityStartHour+i) || court.unavailabilities.includes(court.availabilityStartHour+i)"
+                    @click="addReservation(court, court.availabilityStartHour+i)"
+                  >
+                    {{court.reservations.includes(court.availabilityStartHour+i)?
+                    'Booked':
+                    court.unavailabilities.includes(court.availabilityStartHour+i)?
+                    'Not available':'Book'}}
+                  </button>
                 </li>
+              </ul>
+            </div>
+          </div>
+          <div id="chooseDate">
+            <h1>Choose date from</h1>
+            <select name="dates" id="dates" v-model="selectedDate">
+              <option
+                v-for="i in Array(lookAheadDays).keys()"
+                :value="calculateDate(i)"
+              >
+                {{dateToString(calculateDate(i))}}
+              </option>
+            </select>
+          </div>
+          <div id="personalReservations">
+            <h1>Your reservations</h1>
+            <ul id="personalReservation">
+              <li v-for="reservation in personalReservations">
+                {{courts.find(court=>
+                court.id==reservation.courtId).description}}:
+                {{dateToString(reservation.date)}}
+                {{String(reservation.startHour).padStart(2,
+                '0')}}:00-{{reservation.startHour+1}}:00
+                <button @click="deleteReservation(reservation)">Delete</button>
+              </li>
             </ul>
+          </div>
         </div>
-    </main>
-</div>
-<script>
-  const {createApp} = Vue;
+      </main>
 
-  createApp({
-    data: function () {
-      return {
-        startDate: new Date(),
-        selectedDate: new Date(),
-        lookAheadDays: 7,
-        courts: [
-          {
-            id: 1,
-            description: 'Platz 1',
-            availabilityStartHour: 10,
-            availabilityEndHour: 20,
-            reservations: [
-              11, 12
-            ],
-            unavailabilities: [
-              13, 14
-            ]
-          },
-        ],
-        personalReservations: [
-          {
-            id: 1,
-            courtId: 1,
-            date: new Date(),
-            startHour: 11,
-          }
-        ],
-        jwt: { // Retrieve JWT from local storage
-          token: localStorage.getItem('jwt'),
-          expiresAt: localStorage.getItem('expiresAt') ? new Date(+localStorage.getItem('expiresAt')) : null
+      <footer>
+        Tennisverein Neumarkt an der Ybbs |
+        <a href="https://maps.app.goo.gl/nqSfC7pE9LfXt9AGA" target="_blank"
+          >Freizeitzentrum 5, 3371 Neumarkt an der Ybbs</a
+        >
+        | <a href="mailto:tennis@tennissport.at"> tennis@tennissport.at</a>
+      </footer>
+    </div>
+    <script>
+      const { createApp } = Vue;
+
+      createApp({
+        data: function () {
+          return {
+            startDate: new Date(),
+            selectedDate: new Date(),
+            lookAheadDays: 7,
+            courts: [],
+            personalReservations: [],
+            user: "",
+            loggedIn: undefined,
+            isAdmin: undefined,
+            jwt: {
+              // Retrieve JWT from local storage
+              token: localStorage.getItem("jwt"),
+              expiresAt: localStorage.getItem("expiresAt")
+                ? new Date(+localStorage.getItem("expiresAt"))
+                : null,
+            },
+            userApiUrl: "/user/api/",
+            apiUrl: "/data/api/",
+            ws: null,
+          };
         },
-        apiUrl: '/data/api/',
-        ws: null
-      };
-    },
-    methods: {
-      calculateDate: function (offset) {
-        let newDate = new Date(this.startDate);
-        newDate.setDate(this.startDate.getDate() + offset);
-        newDate.setHours(0, 0, 0, 0);
-        return newDate;
-      },
-      dateToString: function (date) {
-        return date.getDate().toString().padStart(2, '0') + '.' + (date.getMonth() + 1).toString().padStart(2, '0') + '.' + date.getFullYear();
-      },
-      addReservation: function (court, hour) {
-        axios.post(`${this.apiUrl}court/reservation/add`, {
-          courtId: court.id,
-          date: this.selectedDate.getTime(),
-          startHour: hour
-        }, {headers: this.authorizationHeader()})
-          .then(() => {
-              this.fetchPersonalReservations();
-            }
-          )
-          .catch(error => alert(`Failed to add reservation\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
-      },
-      deleteReservation: function (reservation) {
-        axios.delete(`${this.apiUrl}court/reservation/delete/${encodeURIComponent(reservation.id)}`, {headers: this.authorizationHeader()})
-          .then(() => {
-            this.fetchPersonalReservations();
-          })
-          .catch(error => alert(`Failed to delete reservation\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
-      },
-      authorizationHeader() {
-        return this.jwt.token ? {'Authorization': `Bearer ${this.jwt.token}`} : {};
-      },
-      fetchCourts() {
-        return axios.get(`${this.apiUrl}court/all/${encodeURIComponent(this.selectedDate.getTime())}`, {headers: this.authorizationHeader()})
-          .then(response => this.courts = response.data)
-          .catch(error => alert(`Failed to fetch all courts \nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
-      },
-      fetchPersonalReservations() {
-        return axios.get(`${this.apiUrl}court/reservation/${encodeURIComponent(this.selectedDate.getTime())}`, {headers: this.authorizationHeader()})
-          .then(response => {
-            response.data.forEach(reservation => reservation.date = new Date(reservation.date));
-            this.personalReservations = response.data;
-          })
-          .catch(error => alert(`Failed to fetch all personal reservations \nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
-      },
-      setupWebsocketClient() {
-        try {
-          const websocket = new WebSocket('/ws/');
-          this.ws = websocket;
-          vue = this;
-
-          websocket.onmessage = function (event) {
-            const message = JSON.parse(event.data);
-            if (message.entity === 'reservation') {
-              switch (message.op) {
-                case 'add':
-                  reservations = vue.courts.find(court => message.data.courtId === court.id).reservations;
-                  if (!reservations.includes(message.data.startHour)) {
-                    reservations.push(message.data.startHour);
+        methods: {
+          calculateDate: function (offset) {
+            let newDate = new Date(this.startDate);
+            newDate.setDate(this.startDate.getDate() + offset);
+            newDate.setHours(0, 0, 0, 0);
+            return newDate;
+          },
+          dateToString: function (date) {
+            return (
+              date.getDate().toString().padStart(2, "0") +
+              "." +
+              (date.getMonth() + 1).toString().padStart(2, "0") +
+              "." +
+              date.getFullYear()
+            );
+          },
+          addReservation: function (court, hour) {
+            axios
+              .post(
+                `${this.apiUrl}court/reservation/add`,
+                {
+                  courtId: court.id,
+                  date: this.selectedDate.getTime(),
+                  startHour: hour,
+                },
+                { headers: this.authorizationHeader() }
+              )
+              .then(() => {
+                this.fetchPersonalReservations();
+              })
+              .catch((error) =>
+                alert(
+                  `Failed to add reservation\nCode: ${error.code}\nMessage: ${
+                    error.message
+                  }\nResponse: ${JSON.stringify(error.response, null, 2)}`
+                )
+              );
+          },
+          deleteReservation: function (reservation) {
+            axios
+              .delete(
+                `${this.apiUrl}court/reservation/delete/${encodeURIComponent(
+                  reservation.id
+                )}`,
+                { headers: this.authorizationHeader() }
+              )
+              .then(() => {
+                this.fetchPersonalReservations();
+              })
+              .catch((error) =>
+                alert(
+                  `Failed to delete reservation\nCode: ${
+                    error.code
+                  }\nMessage: ${error.message}\nResponse: ${JSON.stringify(
+                    error.response,
+                    null,
+                    2
+                  )}`
+                )
+              );
+          },
+          authorizationHeader() {
+            return this.jwt.token
+              ? { Authorization: `Bearer ${this.jwt.token}` }
+              : {};
+          },
+          updateUserInformation() {
+            // no token so user not logged in
+            if (this.jwt.token == null) {
+              window.location.href = "/";
+              // token exists check if valid
+            } else {
+              axios
+                .get(`${this.userApiUrl}user/information`, {
+                  headers: this.authorizationHeader(),
+                })
+                .then((response) => {
+                  if (response.data == "") {
+                    window.location.href = "/";
+                  } else {
+                    this.user = response.data.name;
+                    this.loggedIn = true;
+                    this.isAdmin = response.data.isAdmin;
                   }
-                  break;
-                case 'delete':
-                  court = vue.courts.find(court => message.data.courtId === court.id);
-                  if (court.reservations.includes(message.data.startHour)) {
-                    court.reservations = court.reservations.filter(item => item !== message.data.startHour);
-                  }
-                  break;
-              }
+                })
+                .catch((error) =>
+                  alert(
+                    `Failed to fetch user information \nCode: ${
+                      error.code
+                    }\nMessage: ${error.message}\nResponse: ${JSON.stringify(
+                      error.response,
+                      null,
+                      2
+                    )}`
+                  )
+                );
             }
-          };
+          },
+          logout() {
+            localStorage.clear();
+            this.jwt.token = null;
+            this.jwt.expiresAt = null;
+          },
+          fetchCourts() {
+            return axios
+              .get(
+                `${this.apiUrl}court/all/${encodeURIComponent(
+                  this.selectedDate.getTime()
+                )}`,
+                { headers: this.authorizationHeader() }
+              )
+              .then((response) => (this.courts = response.data))
+              .catch((error) =>
+                alert(
+                  `Failed to fetch all courts \nCode: ${error.code}\nMessage: ${
+                    error.message
+                  }\nResponse: ${JSON.stringify(error.response, null, 2)}`
+                )
+              );
+          },
+          fetchPersonalReservations() {
+            return axios
+              .get(
+                `${this.apiUrl}court/reservation/${encodeURIComponent(
+                  this.selectedDate.getTime()
+                )}`,
+                { headers: this.authorizationHeader() }
+              )
+              .then((response) => {
+                response.data.forEach(
+                  (reservation) =>
+                    (reservation.date = new Date(reservation.date))
+                );
+                this.personalReservations = response.data;
+              })
+              .catch((error) =>
+                alert(
+                  `Failed to fetch all personal reservations \nCode: ${
+                    error.code
+                  }\nMessage: ${error.message}\nResponse: ${JSON.stringify(
+                    error.response,
+                    null,
+                    2
+                  )}`
+                )
+              );
+          },
+          setupWebsocketClient() {
+            try {
+              const websocket = new WebSocket("/ws/");
+              this.ws = websocket;
+              vue = this;
 
-          websocket.onerror = function (event) {
-            alert('Error occurred while connecting to the WebSocket server');
-          };
+              websocket.onmessage = function (event) {
+                const message = JSON.parse(event.data);
+                if (message.entity === "reservation") {
+                  switch (message.op) {
+                    case "add":
+                      reservations = vue.courts.find(
+                        (court) => message.data.courtId == court.id
+                      ).reservations;
+                      if (!reservations.includes(message.data.startHour)) {
+                        reservations.push(message.data.startHour);
+                      }
+                      break;
+                    case "delete":
+                      court = vue.courts.find(
+                        (court) => message.data.courtId == court.id
+                      );
+                      if (court.reservations.includes(message.data.startHour)) {
+                        court.reservations = court.reservations.filter(
+                          (item) => item !== message.data.startHour
+                        );
+                      }
+                      break;
+                  }
+                }
+              };
 
-        } catch (ex) {
-          alert(ex);
-        }
-      },
+              websocket.onerror = function (event) {
+                alert(
+                  "Error occurred while connecting to the WebSocket server"
+                );
+              };
+            } catch (ex) {
+              alert(ex);
+            }
+          },
+        },
 
-    },
-
-    created() {
-      this.selectedDate.setHours(0, 0, 0, 0);
-    },
-    mounted: async function () {
-      await this.fetchCourts();
-      await this.fetchPersonalReservations();
-      this.setupWebsocketClient();
-    },
-    watch: {
-      selectedDate: async function (newValue, oldValue) {
-        await this.fetchCourts();
-        await this.fetchPersonalReservations();
-      }
-    }
-  }).mount('#app');
-</script>
-
-</body>
+        created() {
+          this.selectedDate.setHours(0, 0, 0, 0);
+        },
+        mounted: async function () {
+          if (this.jwt.token == null) {
+            window.location.href = "/";
+          } else {
+            await this.fetchCourts();
+            await this.fetchPersonalReservations();
+            this.setupWebsocketClient();
+          }
+        },
+        watch: {
+          selectedDate: async function (newValue, oldValue) {
+            await this.fetchCourts();
+            await this.fetchPersonalReservations();
+          },
+          jwt: {
+            handler: function (newValue, oldValue) {
+              this.updateUserInformation();
+            },
+            deep: true,
+            immediate: true,
+          },
+        },
+      }).mount("#app");
+    </script>
+  </body>
 </html>

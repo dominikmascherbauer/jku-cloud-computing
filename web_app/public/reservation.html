@@ -133,24 +133,8 @@
             startDate: new Date(),
             selectedDate: new Date(),
             lookAheadDays: 7,
-            courts: [
-              {
-                id: 1,
-                description: "Platz 1",
-                availabilityStartHour: 10,
-                availabilityEndHour: 20,
-                reservations: [11, 12],
-                unavailabilities: [13, 14],
-              },
-            ],
-            personalReservations: [
-              {
-                id: 1,
-                courtId: 1,
-                date: new Date(),
-                startHour: 11,
-              },
-            ],
+            courts: [],
+            personalReservations: [],
             user: "",
             loggedIn: undefined,
             isAdmin: undefined,
@@ -271,7 +255,7 @@
           fetchCourts() {
             return axios
               .get(
-                `${this.apiUrl}/court/all/${encodeURIComponent(
+                `${this.apiUrl}court/all/${encodeURIComponent(
                   this.selectedDate.getTime()
                 )}`,
                 { headers: this.authorizationHeader() }
@@ -288,7 +272,7 @@
           fetchPersonalReservations() {
             return axios
               .get(
-                `${this.apiUrl}/court/reservation/${encodeURIComponent(
+                `${this.apiUrl}court/reservation/${encodeURIComponent(
                   this.selectedDate.getTime()
                 )}`,
                 { headers: this.authorizationHeader() }

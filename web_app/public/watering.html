@@ -95,13 +95,7 @@
       createApp({
         data: function () {
           return {
-            courts: [
-              {
-                id: 1,
-                running: false,
-                lastWatering: new Date(),
-              },
-            ],
+            courts: [],
             remainingTimes: [],
             intervalIds: [],
             user: "",
@@ -224,7 +218,7 @@
           },
           fetchCourts() {
             axios
-              .get(`${this.apiUrl}/court/all`, {
+              .get(`${this.apiUrl}court/all`, {
                 headers: this.authorizationHeader(),
               })
               .then((response) => {

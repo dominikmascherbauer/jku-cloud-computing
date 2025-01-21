@@ -1,154 +1,326 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>TCN</title>
-    <link href="./stylesheets/styles.css" rel="stylesheet">
-    <link href="./stylesheets/admin.css" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin portal</title>
+    <link rel="stylesheet" href="./stylesheets/styles.css" />
+    <link rel="stylesheet" href="./stylesheets/admin.css" />
     <script src="./js/vue.global.js"></script>
     <script src="./js/axios.min.js"></script>
-</head>
-<body>
-<div id="app">
-    <header>
-        <h1>Adminportal</h1>
-        <nav>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <div id="menu">
+          <div>
+            <img src="images/tennis.svg" alt="Tennis player" />
+            <h1>Tennis Club Neumarkt</h1>
+          </div>
+          <nav id="navbar">
             <ul>
-                <li><a href="index.html">Zurück</a></li>
+              <li><a href="/">Main page</a></li>
+              <li v-if="loggedIn">
+                <a href="reservation.html">Tennis court reservation</a>
+              </li>
+              <li v-if="loggedIn">
+                <a href="watering.html">Tennis court watering</a>
+              </li>
             </ul>
-        </nav>
-    </header>
-
-    <main>
-        <div>
-            <h1>Alle Benutzer</h1>
-            <table>
-                <thead>
-                <tr>
-                    <th>Vorname</th>
-                    <th>Nachname</th>
-                    <th>Email</th>
-                    <th>Rolle</th>
-                    <th>Benutzer löschen</th>
-                </tr>
-                </thead>
-                <tbody id="userList">
-                <tr v-for="user in users">
-                    <td>{{user.firstname}}</td>
-                    <td>{{user.lastname}}</td>
-                    <td>{{user.mail}}</td>
-                    <td>
-                        <select @change="changeUserRole(user, $event.target.value)" id="changeUserRole">
-                            <option :selected="user.role === 'standard'" value="standard">Standardbenutzer</option>
-                            <option :selected="user.role === 'admin'" value="admin">Admin</option>
-                        </select>
-                    </td>
-                    <td>
-                        <button @click="removeUser(user.mail)">Entfernen</button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+          </nav>
         </div>
         <div>
-            <h1>Benutzer hinzufügen</h1>
-            <form @submit.prevent="registerAxios" id="addUserForm">
-                <label for="registerFirstname">Vorname:</label>
-                <input id="registerFirstname" required type="text" v-model="registerFirstname">
-                <label for="registerLastname">Nachname:</label>
-                <input id="registerLastname" required type="text" v-model="registerLastname">
-                <label for="registerEmail">Email:</label>
-                <input id="registerEmail" required type="email" v-model="registerEmail">
-                <label for="registerRole">Rolle:</label>
-                <select id="registerRole" v-model="registerRole">
-                    <option value="standard">Standardbenutzer</option>
-                    <option value="admin">Admin</option>
-                </select>
-                <label for="registerPassword">Passwort:</label>
-                <input id="registerPassword" required type="password" v-model="registerPassword">
-                <input id="registerButton" type="submit" value="Registrieren">
+          <div id="userInfo" v-if="loggedIn === true">
+            <p>Welcome, <span id="loggedInUser">{{user}}</span>!</p>
+            <div>
+              <a href="admin.html">Admin portal</a>
+              <a @click="logout" href="/">Logout</a>
+            </div>
+          </div>
+          <div v-if="loggedIn === false">
+            <form @submit.prevent="loginAxios" id="loginForm">
+              <label for="loginEmail"
+                >Email:
+                <input
+                  type="email"
+                  id="loginEmail"
+                  v-model="loginEmail"
+                  required
+                />
+              </label>
+              <label for="loginPassword"
+                >Password:
+                <input
+                  type="password"
+                  id="loginPassword"
+                  v-model="loginPassword"
+                  required
+                />
+              </label>
+              <button type="submit" id="submitButton">Login</button>
             </form>
+          </div>
         </div>
-    </main>
+      </header>
 
+      <main>
+        <div>
+          <h1>All users</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>First name</th>
+                <th>Last name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="userList">
+              <tr v-for="user in users">
+                <td>{{user.firstname}}</td>
+                <td>{{user.lastname}}</td>
+                <td>{{user.mail}}</td>
+                <td>
+                  <select
+                    id="changeUserRole"
+                    @change="changeUserRole(user, $event.target.value)"
+                  >
+                    <option value="standard" :selected="user.role=='standard'">
+                      Standard
+                    </option>
+                    <option value="admin" :selected="user.role=='admin'">
+                      Admin
+                    </option>
+                  </select>
+                </td>
+                <td>
+                  <button @click="removeUser(user.mail)">Delete user</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h1>Add user</h1>
+          <form @submit.prevent="registerAxios" id="addUserForm">
+            <label for="registerFirstname">First name:</label>
+            <input
+              type="text"
+              id="registerFirstname"
+              v-model="registerFirstname"
+              required
+            />
+            <label for="registerLastname">Last name:</label>
+            <input
+              type="text"
+              id="registerLastname"
+              v-model="registerLastname"
+              required
+            />
+            <label for="registerEmail">Email:</label>
+            <input
+              type="email"
+              id="registerEmail"
+              v-model="registerEmail"
+              required
+            />
+            <label for="registerRole">Role:</label>
+            <select id="registerRole" v-model="registerRole">
+              <option value="standard">Standard</option>
+              <option value="admin">Admin</option>
+            </select>
+            <label for="registerPassword">Passwort:</label>
+            <input
+              type="password"
+              id="registerPassword"
+              v-model="registerPassword"
+              required
+            />
+            <button type="submit" id="registerButton">Register</button>
+          </form>
+        </div>
+      </main>
+
+      <footer>
+        Tennisverein Neumarkt an der Ybbs |
+        <a href="https://maps.app.goo.gl/nqSfC7pE9LfXt9AGA" target="_blank"
+          >Freizeitzentrum 5, 3371 Neumarkt an der Ybbs</a
+        >
+        | <a href="mailto:tennis@tennissport.at"> tennis@tennissport.at</a>
+      </footer>
+    </div>
     <script>
-      const {createApp} = Vue;
+      const { createApp } = Vue;
 
       createApp({
         data: function () {
           return {
-            registerFirstname: '',
-            registerLastname: '',
-            registerEmail: '',
-            registerRole: 'standard',
-            registerPassword: '',
-            users: [
-              {firstname: 'Michael', lastname: 'Haas', mail: 'user1@example.com', role: 'standard'},
-              {firstname: 'Michael', lastname: 'Haas', mail: 'user1@example.com', role: 'standard'},
-              {firstname: 'Michael', lastname: 'Haas', mail: 'user1@example.com', role: 'admin'},
-            ],
-            loggedIn: true,
-            isAdmin: true,
-            jwt: { // Retrieve JWT from local storage
-              token: localStorage.getItem('jwt'),
-              expiresAt: localStorage.getItem('expiresAt') ? new Date(+localStorage.getItem('expiresAt')) : null
+            registerFirstname: "",
+            registerLastname: "",
+            registerEmail: "",
+            registerRole: "standard",
+            registerPassword: "",
+            users: [],
+            loggedIn: undefined,
+            isAdmin: undefined,
+            jwt: {
+              // Retrieve JWT from local storage
+              token: localStorage.getItem("jwt"),
+              expiresAt: localStorage.getItem("expiresAt")
+                ? new Date(+localStorage.getItem("expiresAt"))
+                : null,
             },
-            apiUrl: '/user/api/'
+            apiUrl: "/user/api/",
           };
         },
         methods: {
           authorizationHeader() {
-            return this.jwt.token ? {'Authorization': `Bearer ${this.jwt.token}`} : {};
+            return this.jwt.token
+              ? { Authorization: `Bearer ${this.jwt.token}` }
+              : {};
+          },
+          updateUserInformation() {
+            // no token so user not logged in
+            if (this.jwt.token == null) {
+              window.location.href = "/";
+              // token exists check if valid
+            } else {
+              axios
+                .get(`${this.apiUrl}user/information`, {
+                  headers: this.authorizationHeader(),
+                })
+                .then((response) => {
+                  if (response.data == "") {
+                    window.location.href = "/";
+                  } else {
+                    this.user = response.data.name;
+                    this.loggedIn = true;
+                    this.isAdmin = response.data.isAdmin;
+                    if (!this.isAdmin) {
+                      window.location.href = "/";
+                    }
+                  }
+                })
+                .catch((error) =>
+                  alert(
+                    `Failed to fetch user information \nCode: ${
+                      error.code
+                    }\nMessage: ${error.message}\nResponse: ${JSON.stringify(
+                      error.response,
+                      null,
+                      2
+                    )}`
+                  )
+                );
+            }
+          },
+          logout() {
+            localStorage.clear();
+            this.jwt.token = null;
+            this.jwt.expiresAt = null;
           },
           changeUserRole(user, newRole) {
-            axios.post(`${this.apiUrl}user/${encodeURIComponent(user.mail)}/${encodeURIComponent(newRole)}`, {}, {headers: this.authorizationHeader()})
-              .then((response) => user.role = newRole)
-              .catch(error => alert(`Failed to change user role\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
+            axios
+              .post(
+                `${this.apiUrl}user/${encodeURIComponent(
+                  user.mail
+                )}/${encodeURIComponent(newRole)}`,
+                {},
+                { headers: this.authorizationHeader() }
+              )
+              .then((response) => {
+                user.role = newRole;
+                alert("User role changed successfully");
+              })
+              .catch((error) =>
+                alert(
+                  `Failed to change user role\nCode: ${error.code}\nMessage: ${
+                    error.message
+                  }\nResponse: ${JSON.stringify(error.response, null, 2)}`
+                )
+              );
           },
           registerAxios() {
-            const url = '/user/user_handling/register';
-            axios.post(url, {
-              firstname: this.registerFirstname,
-              lastname: this.registerLastname,
-              mail: this.registerEmail,
-              pw: this.registerPassword,
-              role: this.registerRole
-            })
-              .then(response => {
+            const url = "/user/user_handling/register";
+            axios
+              .post(url, {
+                firstname: this.registerFirstname,
+                lastname: this.registerLastname,
+                mail: this.registerEmail,
+                pw: this.registerPassword,
+                role: this.registerRole,
+              })
+              .then((response) => {
                 this.users.push({
                   firstname: this.registerFirstname,
                   lastname: this.registerLastname,
                   mail: this.registerEmail,
-                  role: this.registerRole
+                  role: this.registerRole,
                 });
-                this.registerFirstname = '';
-                this.registerLastname = '';
-                this.registerEmail = '';
-                this.registerRole = 'standard';
-                this.registerPassword = '';
+                this.registerFirstname = "";
+                this.registerLastname = "";
+                this.registerEmail = "";
+                this.registerRole = "standard";
+                this.registerPassword = "";
               })
-              .catch(error => {
-                console.error('Error:', error);
-                alert(`Registration failed\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`);
+              .catch((error) => {
+                console.error("Error:", error);
+                alert(
+                  `Registration failed\nCode: ${error.code}\nMessage: ${
+                    error.message
+                  }\nResponse: ${JSON.stringify(error.response, null, 2)}`
+                );
               });
           },
           fetchUsers() {
-            axios.get(`${this.apiUrl}user/all`, {headers: this.authorizationHeader()})
-              .then(response => this.users = response.data)
-              .catch(error => alert(`Failed to fetch all users \nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
+            axios
+              .get(`${this.apiUrl}user/all`, {
+                headers: this.authorizationHeader(),
+              })
+              .then((response) => (this.users = response.data))
+              .catch((error) =>
+                alert(
+                  `Failed to fetch all users \nCode: ${error.code}\nMessage: ${
+                    error.message
+                  }\nResponse: ${JSON.stringify(error.response, null, 2)}`
+                )
+              );
           },
           removeUser(mail) {
-            axios.delete(`${this.apiUrl}user/delete/${encodeURIComponent(mail)}`, {headers: this.authorizationHeader()})
-              .then(() => this.users = this.users.filter(user => user.mail !== mail))
-              .catch(error => alert(`Failed to delete user\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
-          }
+            axios
+              .delete(`${this.apiUrl}user/delete/${encodeURIComponent(mail)}`, {
+                headers: this.authorizationHeader(),
+              })
+              .then(
+                () =>
+                  (this.users = this.users.filter((user) => user.mail != mail))
+              )
+              .catch((error) =>
+                alert(
+                  `Failed to delete user\nCode: ${error.code}\nMessage: ${
+                    error.message
+                  }\nResponse: ${JSON.stringify(error.response, null, 2)}`
+                )
+              );
+          },
+        },
+        watch: {
+          jwt: {
+            handler: function (newValue, oldValue) {
+              this.updateUserInformation();
+            },
+            deep: true,
+            immediate: true,
+          },
         },
         mounted() {
-          this.fetchUsers();
-        }
-      }).mount('#app');
+          if (this.jwt.token == null) {
+            window.location.href = "/";
+          } else {
+            this.fetchUsers();
+          }
+        },
+      }).mount("#app");
     </script>
-
-</div>
-</body>
+  </body>
 </html>

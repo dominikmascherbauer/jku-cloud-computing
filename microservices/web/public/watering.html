@@ -1,160 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>TCN</title>
-    <link href="./stylesheets/styles.css" rel="stylesheet">
-    <link href="./stylesheets/watering.css" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Watering</title>
+    <link rel="stylesheet" href="./stylesheets/styles.css" />
+    <link rel="stylesheet" href="./stylesheets/watering.css" />
     <script src="./js/vue.global.js"></script>
     <script src="./js/axios.min.js"></script>
-</head>
-<body>
-<div id="app">
-    <header id="header">
-        <h1>Tennisplatzbewässerung</h1>
-        <nav id="navbar">
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <div id="menu">
+          <div>
+            <img src="images/tennis.svg" alt="Tennis player" />
+            <h1>Tennis Club Neumarkt</h1>
+          </div>
+          <nav id="navbar">
             <ul>
-                <li><a href="index.html">Zurück</a></li>
+              <li><a href="/">Main page</a></li>
+              <li v-if="loggedIn">
+                <a href="reservation.html">Tennis court reservation</a>
+              </li>
+              <li v-if="loggedIn">
+                <a href="watering.html">Tennis court watering</a>
+              </li>
             </ul>
-        </nav>
-    </header>
-
-    <section>
-        <div id="courtWatering">
-            <div class="court" v-for="court in courts">
-
-                <span class="courtHeading">Platz {{court.id}}</span>
-                <button @click="isWateringRunning(court)?stopWatering(court): startWatering(court)">
-                    {{isWateringRunning(court) ? 'Bewässerung deaktivieren' : 'Bewässern'}}
-                </button>
-                <span v-if="isWateringRunning(court)">Verbleibende Zeit: {{remainingTimes[court.id]}} Minuten</span>
-                <span v-if="!isWateringRunning(court)">Zuletzt bewässert: {{court.lastWatering.toLocaleString()}}</span>
-            </div>
+          </nav>
         </div>
+        <div>
+          <div id="userInfo" v-if="loggedIn === true">
+            <p>Welcome, <span id="loggedInUser">{{user}}</span>!</p>
+            <div>
+              <a href="admin.html">Admin portal</a>
+              <a @click="logout" href="/">Logout</a>
+            </div>
+          </div>
+          <div v-if="loggedIn === false">
+            <form @submit.prevent="loginAxios" id="loginForm">
+              <label for="loginEmail"
+                >Email:
+                <input
+                  type="email"
+                  id="loginEmail"
+                  v-model="loginEmail"
+                  required
+                />
+              </label>
+              <label for="loginPassword"
+                >Password:
+                <input
+                  type="password"
+                  id="loginPassword"
+                  v-model="loginPassword"
+                  required
+                />
+              </label>
+              <button type="submit" id="submitButton">Login</button>
+            </form>
+          </div>
+        </div>
+      </header>
 
-    </section>
+      <main>
+        <div id="courtWatering">
+          <div class="court" v-for="court in courts">
+            <span class="courtHeading">Platz {{court.id}}</span>
+            <button
+              @click="isWateringRunning(court)?stopWatering(court): startWatering(court)"
+            >
+              {{isWateringRunning(court)? 'Deactivate watering' : 'Water'}}
+            </button>
+            <span v-if="isWateringRunning(court)"
+              >Rest time: {{remainingTimes[court.id]}} Minuten</span
+            >
+            <span v-if="!isWateringRunning(court)"
+              >Last watering: {{court.lastWatering.toLocaleString()}}</span
+            >
+          </div>
+        </div>
+      </main>
 
-    <footer>
-    </footer>
-</div>
-<script>
-  const {createApp} = Vue;
+      <footer>
+        Tennisverein Neumarkt an der Ybbs |
+        <a href="https://maps.app.goo.gl/nqSfC7pE9LfXt9AGA" target="_blank"
+          >Freizeitzentrum 5, 3371 Neumarkt an der Ybbs</a
+        >
+        | <a href="mailto:tennis@tennissport.at"> tennis@tennissport.at</a>
+      </footer>
+    </div>
+    <script>
+      const { createApp } = Vue;
 
-  createApp({
-    data: function () {
-      return {
-        courts: [
-          {
-            id: 1,
-            running: false,
-            lastWatering: new Date(),
-          },
-        ],
-        remainingTimes: [],
-        intervalIds: [],
-        jwt: { // Retrieve JWT from local storage
-          token: localStorage.getItem('jwt'),
-          expiresAt: localStorage.getItem('expiresAt') ? new Date(+localStorage.getItem('expiresAt')) : null
+      createApp({
+        data: function () {
+          return {
+            courts: [],
+            remainingTimes: [],
+            intervalIds: [],
+            user: "",
+            loggedIn: undefined,
+            isAdmin: undefined,
+            jwt: {
+              // Retrieve JWT from local storage
+              token: localStorage.getItem("jwt"),
+              expiresAt: localStorage.getItem("expiresAt")
+                ? new Date(+localStorage.getItem("expiresAt"))
+                : null,
+            },
+            wateringDuration: 2,
+            userApiUrl: "/user/api/",
+            apiUrl: "/data/api/",
+            ws: null,
+          };
         },
-        wateringDuration: 2,
-        apiUrl: '/data/api/',
-        ws: null
-      };
-    },
-    mounted() {
-      this.fetchCourts();
-      this.setupWebsocketClient();
-    },
-    methods: {
-      startWatering: function (court) {
-        axios.post(`${this.apiUrl}court/startWatering/${encodeURIComponent(court.id)}`, {}, {headers: this.authorizationHeader()})
-          .catch(error => alert(`Failed to start watering\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
-      },
-      stopWatering: function (court) {
-        axios.post(`${this.apiUrl}court/stopWatering/${encodeURIComponent(court.id)}`, {}, {headers: this.authorizationHeader()})
-          .catch(error => alert(`Failed to start watering\nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
-        court.running = false;
-
-      },
-      updateRemainingTime: function (court) {
-        this.remainingTimes[court.id] = this.wateringDuration - Math.floor((new Date() - court.lastWatering) / (1000 * 60));
-        if (this.remainingTimes[court.id] <= 0) this.stopInterval(court);
-      },
-      isWateringRunning: function (court) {
-        return court.running && (new Date() - court.lastWatering) / (1000 * 60) < this.wateringDuration;
-      },
-      stopInterval(court) {
-        clearInterval(this.intervalIds[court.id]);
-        this.intervalIds[court.id] = -1;
-      },
-      authorizationHeader() {
-        return this.jwt.token ? {'Authorization': `Bearer ${this.jwt.token}`} : {};
-      },
-      fetchCourts() {
-        axios.get(`${this.apiUrl}court/all`, {headers: this.authorizationHeader()})
-          .then(response => {
-              response.data.forEach(court => {
+        mounted() {
+          if (!this.jwt.token) {
+            window.location.href = "/";
+          } else {
+            this.fetchCourts();
+            this.setupWebsocketClient();
+          }
+        },
+        methods: {
+          startWatering: function (court) {
+            axios
+              .post(
+                `${this.apiUrl}court/startWatering/${encodeURIComponent(
+                  court.id
+                )}`,
+                {},
+                { headers: this.authorizationHeader() }
+              )
+              .catch((error) =>
+                alert(
+                  `Failed to start watering\nCode: ${error.code}\nMessage: ${
+                    error.message
+                  }\nResponse: ${JSON.stringify(error.response, null, 2)}`
+                )
+              );
+          },
+          stopWatering: function (court) {
+            axios
+              .post(
+                `${this.apiUrl}court/stopWatering/${encodeURIComponent(
+                  court.id
+                )}`,
+                {},
+                { headers: this.authorizationHeader() }
+              )
+              .catch((error) =>
+                alert(
+                  `Failed to start watering\nCode: ${error.code}\nMessage: ${
+                    error.message
+                  }\nResponse: ${JSON.stringify(error.response, null, 2)}`
+                )
+              );
+            court.running = false;
+          },
+          updateRemainingTime: function (court) {
+            this.remainingTimes[court.id] =
+              this.wateringDuration -
+              Math.floor((new Date() - court.lastWatering) / (1000 * 60));
+            if (this.remainingTimes[court.id] <= 0) this.stopInterval(court);
+          },
+          isWateringRunning: function (court) {
+            return (
+              court.running &&
+              (new Date() - court.lastWatering) / (1000 * 60) <
+                this.wateringDuration
+            );
+          },
+          stopInterval(court) {
+            clearInterval(this.intervalIds[court.id]);
+            this.intervalIds[court.id] = -1;
+          },
+          authorizationHeader() {
+            return this.jwt.token
+              ? { Authorization: `Bearer ${this.jwt.token}` }
+              : {};
+          },
+          updateUserInformation() {
+            // no token so user not logged in
+            if (this.jwt.token == null) {
+              window.location.href = "/";
+              // token exists check if valid
+            } else {
+              axios
+                .get(`${this.userApiUrl}user/information`, {
+                  headers: this.authorizationHeader(),
+                })
+                .then((response) => {
+                  if (response.data == "") {
+                    window.location.href = "/";
+                  } else {
+                    this.user = response.data.name;
+                    this.loggedIn = true;
+                    this.isAdmin = response.data.isAdmin;
+                  }
+                })
+                .catch((error) =>
+                  alert(
+                    `Failed to fetch user information \nCode: ${
+                      error.code
+                    }\nMessage: ${error.message}\nResponse: ${JSON.stringify(
+                      error.response,
+                      null,
+                      2
+                    )}`
+                  )
+                );
+            }
+          },
+          logout() {
+            localStorage.clear();
+            this.jwt.token = null;
+            this.jwt.expiresAt = null;
+          },
+          fetchCourts() {
+            axios
+              .get(`${this.apiUrl}court/all`, {
+                headers: this.authorizationHeader(),
+              })
+              .then((response) => {
+                response.data.forEach((court) => {
                   this.intervalIds[court.id] = -1;
                   this.remainingTimes[court.id] = -1;
                   court.lastWatering = new Date(court.lastWatering);
-                }
+                });
+                this.courts = response.data;
+              })
+              .catch((error) =>
+                alert(
+                  `Failed to fetch all courts \nCode: ${error.code}\nMessage: ${
+                    error.message
+                  }\nResponse: ${JSON.stringify(error.response, null, 2)}`
+                )
               );
-              this.courts = response.data;
-            }
-          ).catch(error => alert(`Failed to fetch all courts \nCode: ${error.code}\nMessage: ${error.message}\nResponse: ${JSON.stringify(error.response, null, 2)}`));
-      },
-      setupWebsocketClient() {
-        try {
-          const websocket = new WebSocket('/ws/');
-          this.ws = websocket;
-          vue = this;
+          },
+          setupWebsocketClient() {
+            try {
+              const websocket = new WebSocket("/ws/");
+              this.ws = websocket;
+              vue = this;
 
-          websocket.onmessage = function (event) {
-            const message = JSON.parse(event.data);
-            if (message.entity === 'watering') {
-              switch (message.op) {
-                case 'start':
-                  court = vue.courts.find(court => message.data.courtId == court.id);
-                  court.lastWatering = new Date(message.data.lastWatering);
-                  court.running = true;
-                  break;
-                case 'stop':
-                  court = vue.courts.find(court => message.data.courtId == court.id);
-                  court.running = false;
-                  break;
-              }
-            }
-          };
+              websocket.onmessage = function (event) {
+                const message = JSON.parse(event.data);
+                if (message.entity === "watering") {
+                  switch (message.op) {
+                    case "start":
+                      court = vue.courts.find(
+                        (court) => message.data.courtId == court.id
+                      );
+                      court.lastWatering = new Date(message.data.lastWatering);
+                      court.running = true;
+                      break;
+                    case "stop":
+                      court = vue.courts.find(
+                        (court) => message.data.courtId == court.id
+                      );
+                      court.running = false;
+                      break;
+                  }
+                }
+              };
 
-          websocket.onerror = function (event) {
-            alert('Error occurred while connecting to the WebSocket server');
-          };
-
-        } catch (ex) {
-          alert(ex);
-        }
-      },
-    },
-    watch: {
-      courts: {
-        handler(value, oldValue) {
-          oldValue.forEach(court => {
-            if (this.intervalIds[court.id] >= 0) {
-              clearInterval(this.intervalIds[court.id]);
+              websocket.onerror = function (event) {
+                alert(
+                  "Error occurred while connecting to the WebSocket server"
+                );
+              };
+            } catch (ex) {
+              alert(ex);
             }
-          });
-          value.forEach(court => {
-            if (this.isWateringRunning(court)) {
-              this.updateRemainingTime(court);
-              this.intervalIds[court.id] = setInterval(this.updateRemainingTime, 1000, court);
-            }
-          });
+          },
         },
-        deep: true
-      }
-    }
-  }).mount('#app');
-</script>
-
-</body>
+        watch: {
+          courts: {
+            handler(value, oldValue) {
+              oldValue.forEach((court) => {
+                if (this.intervalIds[court.id] >= 0) {
+                  clearInterval(this.intervalIds[court.id]);
+                }
+              });
+              value.forEach((court) => {
+                if (this.isWateringRunning(court)) {
+                  this.updateRemainingTime(court);
+                  this.intervalIds[court.id] = setInterval(
+                    this.updateRemainingTime,
+                    1000,
+                    court
+                  );
+                }
+              });
+            },
+            deep: true,
+          },
+          jwt: {
+            handler: function (newValue, oldValue) {
+              this.updateUserInformation();
+            },
+            deep: true,
+            immediate: true,
+          },
+        },
+      }).mount("#app");
+    </script>
+  </body>
 </html>
