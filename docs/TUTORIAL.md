@@ -58,7 +58,7 @@ For minikube we need to be able to use docker as a non-root user.
 It is also possible to run docker in rootless mode, but that did not work with minikube for us, so this is the preferred way to set up docker for minikube for us.
 ```shell
 sudo groupadd docker
-sudo usermod -aG docker $USER
+sudo usermod -aG docker <username>
 newgrp docker
 ```
 Docker should be able to run without root privileges now, to test if it worked we can run:
@@ -169,7 +169,7 @@ In this part, we want to discuss how to automatically deploy the services, and m
 
 We will also be able to reuse the automatic deployment script for re-deploying the services if the kubelets change.
 
-For convenience, we will also explain this step with the user's home directory a our working directory. Therefore, we will need [bash scripts](../systemd_services/scripts) and [systemd services](../systemd_services/services) that need to be placed in appropriate directories. Here we assume the repository was cloned to _/opt/jku-cloud-computing_:
+For convenience, we will also explain this step with the user's home directory a our working directory. Therefore, we will need [bash scripts](../systemd_services/scripts) and [systemd services](../systemd_services/services) that need to be placed in appropriate directories. Here we assume the repository was cloned to _/opt/jku-cloud-computing_. Please make sure to update the username in the systemd service files to your VM user.
 ```shell
 cd /opt
 mkdir scripts
