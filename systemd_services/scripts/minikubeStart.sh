@@ -8,5 +8,8 @@ until minikube status | grep -q 'host: Running'; do
   echo "Waiting for Minikube to start..." 
   sleep 30 
 done 
+
+# enable ingress addon
+minikube addons enable ingress
  
 echo "Minikube is running. Proceeding with the script..."
